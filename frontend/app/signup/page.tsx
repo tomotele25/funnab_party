@@ -28,10 +28,18 @@ export default function Signup() {
       });
       toast.success(res.data.message || "Account created successfully!");
       router.push("/login");
-    } catch (error: any) {
-      toast.error(
-        error?.response?.data?.message || "Something went wrong. Try again."
-      );
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          error.response?.data?.message ||
+            error.message ||
+            "Something went wrong. Try again."
+        );
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Something went wrong. Try again.");
+      }
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from "axios";
+import type { AxiosError } from "axios";
 
 const BACKENDURL = "http://localhost:2005";
 
@@ -40,8 +41,10 @@ export const options: NextAuthOptions = {
           }
 
           return null;
-        } catch (error: any) {
-          console.error("Auth error:", error.response?.data || error.message);
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+            console.error("Auth error:", error.message);
+          }
           return null;
         }
       },
