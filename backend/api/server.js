@@ -24,6 +24,11 @@ app.use(
 
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  console.log("Test route hit");
+  res.send("Hello world!");
+});
+
 const startServer = async () => {
   try {
     await connectToDb();
