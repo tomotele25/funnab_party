@@ -90,12 +90,18 @@ export default function EventManagerPage() {
       setImage(null);
       setTickets([{ type: "", price: "", quantity: "", deadline: "" }]);
       setIsModalOpen(false);
-    } catch (error: any) {
-      console.error(
-        "Error creating event:",
-        error.response?.data || error.message
-      );
-      toast.error("Error creating event");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          error.response?.data?.message ||
+            error.message ||
+            "Something went wrong. Try again."
+        );
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Something went wrong. Try again.");
+      }
     } finally {
       setLoading(false);
     }
