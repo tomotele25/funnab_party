@@ -6,9 +6,7 @@ import { useSession } from "next-auth/react";
 import Loader from "@/component/Loader";
 import toast from "react-hot-toast";
 
-const BACKENDURL = process.env.NEXT_PUBLIC_BACKEND_URL
-  ? process.env.NEXT_PUBLIC_BACKEND_URL
-  : "http://localhost:2005";
+const BACKENDURL = "https://funnabparty-backend.vercel.app/";
 export default function EventManagerPage() {
   const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);

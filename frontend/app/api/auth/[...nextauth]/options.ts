@@ -3,9 +3,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import axios from "axios";
 import type { AxiosError } from "axios";
 
-const BACKENDURL = process.env.NEXT_PUBLIC_BACKEND_URL
-  ? process.env.NEXT_PUBLIC_BACKEND_URL
-  : "http://localhost:2005";
+const BACKENDURL = "https://funnabparty-backend.vercel.app/";
+// : "http://localhost:2005";
 export const options: NextAuthOptions = {
   providers: [
     CredentialsProvider({
