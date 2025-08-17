@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 
-import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   MapPin,
@@ -14,9 +14,11 @@ import {
   Plus,
   ShoppingCart,
 } from "lucide-react";
+
 import SkeletonLoader from "@/component/SkeletonLoader";
 import { useCart } from "@/context/CartContext";
 
+// ------------------ Types ------------------
 interface Ticket {
   type: string;
   price: number;
@@ -34,24 +36,25 @@ interface Event {
   tickets: Ticket[];
 }
 
-// ✅ Client components always receive plain params object
 interface EventPageProps {
   params: {
     slug: string;
   };
 }
 
+// ------------------ Component ------------------
 const EventPage = ({ params }: EventPageProps) => {
-  const { slug } = params; // just access it directly
+  const { slug } = params;
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [quantity, setQuantity] = useState(1);
 
   const { addToCart } = useCart();
   const router = useRouter();
 
+  // Fetch event data
   useEffect(() => {
     const fetchEvent = async () => {
       try {
@@ -68,17 +71,20 @@ const EventPage = ({ params }: EventPageProps) => {
     fetchEvent();
   }, [slug]);
 
+  // Select a ticket
   const handleSelectTicket = (ticket: Ticket) => {
     setSelectedTicket(ticket);
     setQuantity(1);
   };
 
+  // Change ticket quantity
   const handleQuantityChange = (delta: number) => {
     if (!selectedTicket) return;
     const maxQty = selectedTicket.quantity - selectedTicket.sold;
     setQuantity(Math.max(1, Math.min(quantity + delta, maxQty)));
   };
 
+  // Add to cart and navigate
   const handleCheckout = () => {
     if (!event || !selectedTicket) return;
 
@@ -95,7 +101,7 @@ const EventPage = ({ params }: EventPageProps) => {
 
   if (loading) {
     return (
-      <div className="transition-opacity duration-500 bg-black min-h-screen">
+      <div className="min-h-screen flex items-center justify-center bg-black">
         <SkeletonLoader />
       </div>
     );
@@ -118,17 +124,17 @@ const EventPage = ({ params }: EventPageProps) => {
 
   return (
     <div className="bg-black text-white min-h-screen font-sans">
-      <section className="relative mx-auto py-12 px-4 sm:px-6 lg:px-8 pb-24">
+      <section className="mx-auto py-12 px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <Link
           href="/events"
           className="flex items-center mb-6 text-pink-400 hover:text-pink-300 transition-all duration-300"
-          aria-label="Back to events"
         >
-          <ArrowLeft className="w-6 h-6 mr-2" /> Back to Events
+          <ArrowLeft className="w-6 h-6 mr-2" />
+          Back to Events
         </Link>
 
-        <div className="relative z-10 flex flex-col md:grid md:grid-cols-3 md:gap-8">
+        <div className="flex flex-col md:grid md:grid-cols-3 md:gap-8">
           {/* Event Image */}
           <div className="md:col-span-1 mb-8 md:mb-0">
             <div className="relative rounded-xl overflow-hidden border border-gray-700/50">
@@ -143,7 +149,7 @@ const EventPage = ({ params }: EventPageProps) => {
           </div>
 
           {/* Event Details */}
-          <article className="md:col-span-2 bg-white/3 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50">
+          <article className="md:col-span-2 bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50">
             <h1 className="text-3xl font-bold mb-4">{event.title}</h1>
             <div className="space-y-2 mb-6">
               <p className="text-cyan-300 flex items-center">
@@ -163,9 +169,9 @@ const EventPage = ({ params }: EventPageProps) => {
             {/* Ticket Selection */}
             <h2 className="text-xl font-semibold mb-4">Select Your Ticket</h2>
             <ul className="space-y-4 mb-6">
-              {event.tickets.map((ticket, idx) => (
+              {event.tickets.map((ticket) => (
                 <li
-                  key={idx}
+                  key={ticket.type}
                   className={`p-4 rounded-lg flex justify-between items-center cursor-pointer border ${
                     selectedTicket?.type === ticket.type
                       ? "border-pink-400 bg-gray-800"
