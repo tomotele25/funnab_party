@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import axios from "axios";
@@ -34,18 +34,13 @@ interface Event {
   tickets: Ticket[];
 }
 
-// App Router passes params as plain object
-interface EventPageParams {
-  slug: string;
-}
-
 interface EventPageProps {
-  params: EventPageParams;
+  params: Promise<{ slug: string }>;
 }
 
 // ---------- COMPONENT ----------
 const EventPage = ({ params }: EventPageProps) => {
-  const { slug } = params;
+  const { slug } = use(params);
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
