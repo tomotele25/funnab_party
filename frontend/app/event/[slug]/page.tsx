@@ -34,11 +34,7 @@ interface Event {
   tickets: Ticket[];
 }
 
-interface PageProps {
-  params: { slug: string };
-}
-
-const EventPage = ({ params }: PageProps) => {
+const EventPage = ({ params }: { params: { slug: string } }) => {
   const { slug } = params;
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
