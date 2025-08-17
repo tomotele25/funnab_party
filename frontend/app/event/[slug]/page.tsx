@@ -37,7 +37,7 @@ interface Event {
 interface EventPageProps {
   params: Promise<{ slug: string }>;
 }
-
+const BACKENDURL = "https://funnabparty-backend.vercel.app/";
 // ---------- COMPONENT ----------
 const EventPage = ({ params }: EventPageProps) => {
   const { slug } = use(params);
@@ -56,7 +56,7 @@ const EventPage = ({ params }: EventPageProps) => {
       try {
         setLoading(true);
         const res = await axios.get<{ event: Event }>(
-          `http://localhost:2005/api/events/${slug}`
+          `${BACKENDURL}/api/events/${slug}`
         );
         setEvent(res.data.event);
       } catch (err) {

@@ -18,7 +18,7 @@ import axios from "axios";
 // Constants
 const images = ["/Hero (1).jpg", "/Hero (2).jpg", "/Hero (4).jpg"];
 const texts = ["Explore parties", "Book · SECURE · FAST", "Join the fun"];
-const BACKEND_URL = "http://localhost:2005";
+const BACKENDURL = "https://funnabparty-backend.vercel.app/";
 
 // Interfaces
 interface Ticket {
@@ -217,7 +217,7 @@ export default function Home() {
   useEffect(() => {
     const fetchUpcomingEvents = async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/api/upcoming-event`);
+        const res = await axios.get(`${BACKENDURL}/api/upcoming-event`);
         setUpcomingEvents(res.data.events || []);
       } catch (error) {
         console.error("Error fetching upcoming events:", error);
