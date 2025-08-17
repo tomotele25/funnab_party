@@ -34,8 +34,15 @@ interface Event {
   tickets: Ticket[];
 }
 
-const EventPage = ({ params }: { params: { slug: string } }) => {
-  const { slug } = params;
+// ✅ Client components always receive plain params object
+interface EventPageProps {
+  params: {
+    slug: string;
+  };
+}
+
+const EventPage = ({ params }: EventPageProps) => {
+  const { slug } = params; // just access it directly
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -80,7 +87,7 @@ const EventPage = ({ params }: { params: { slug: string } }) => {
       name: `${event.title} - ${selectedTicket.type}`,
       price: selectedTicket.price,
       quantity,
-      image: event.image, // ✅ include event image
+      image: event.image,
     });
 
     router.push("/event/checkout");
