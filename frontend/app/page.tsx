@@ -231,7 +231,7 @@ export default function Home() {
   useEffect(() => {
     const fetchTodaysEvents = async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/api/todays-event`);
+        const res = await axios.get(`${BACKENDURL}/api/todays-event`);
         setTodaysEventList(res.data.events || []);
       } catch (error) {
         console.error("Error fetching today's events:", error);
