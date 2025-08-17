@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import axios from "axios";
@@ -25,6 +25,7 @@ interface Ticket {
 }
 
 interface Event {
+  _id: string;
   slug: string;
   title: string;
   details: string;
@@ -32,15 +33,17 @@ interface Event {
   image: string;
   date: string;
   tickets: Ticket[];
+  organizer: string;
 }
 
 interface EventPageProps {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }
+
 const BACKENDURL = "https://funnabparty-backend.vercel.app";
-// ---------- COMPONENT ----------
+
 const EventPage = ({ params }: EventPageProps) => {
-  const { slug } = use(params);
+  const { slug } = params;
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -70,7 +73,6 @@ const EventPage = ({ params }: EventPageProps) => {
     fetchEvent();
   }, [slug]);
 
-  // Ticket selection
   const handleSelectTicket = (ticket: Ticket) => {
     setSelectedTicket(ticket);
     setQuantity(1);
@@ -82,7 +84,6 @@ const EventPage = ({ params }: EventPageProps) => {
     setQuantity(Math.max(1, Math.min(quantity + delta, maxQty)));
   };
 
-  // Add to cart & navigate
   const handleCheckout = () => {
     if (!event || !selectedTicket) return;
 
@@ -92,12 +93,13 @@ const EventPage = ({ params }: EventPageProps) => {
       price: selectedTicket.price,
       quantity,
       image: event.image,
+      eventId: event._id,
+      organizer: event.organizer,
     });
 
     router.push("/event/checkout");
   };
 
-  // ---------- RENDER ----------
   if (loading)
     return (
       <div className="transition-opacity duration-500 bg-black min-h-screen">
@@ -122,7 +124,6 @@ const EventPage = ({ params }: EventPageProps) => {
   return (
     <div className="bg-black text-white min-h-screen font-sans">
       <section className="relative mx-auto py-12 px-4 sm:px-6 lg:px-8 pb-24">
-        {/* Back Button */}
         <Link
           href="/events"
           className="flex items-center mb-6 text-pink-400 hover:text-pink-300 transition-all duration-300"
@@ -131,7 +132,6 @@ const EventPage = ({ params }: EventPageProps) => {
         </Link>
 
         <div className="relative z-10 flex flex-col md:grid md:grid-cols-3 md:gap-8">
-          {/* Event Image */}
           <div className="md:col-span-1 mb-8 md:mb-0">
             <div className="relative rounded-xl overflow-hidden border border-gray-700/50">
               <Image
@@ -144,7 +144,6 @@ const EventPage = ({ params }: EventPageProps) => {
             </div>
           </div>
 
-          {/* Event Details */}
           <article className="md:col-span-2 bg-white/3 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50">
             <h1 className="text-3xl font-bold mb-4">{event.title}</h1>
             <div className="space-y-2 mb-6">
@@ -162,7 +161,6 @@ const EventPage = ({ params }: EventPageProps) => {
               <p className="text-gray-100">{event.details}</p>
             </div>
 
-            {/* Ticket Selection */}
             <h2 className="text-xl font-semibold mb-4">Select Your Ticket</h2>
             <ul className="space-y-4 mb-6">
               {event.tickets.map((ticket) => (
@@ -217,7 +215,6 @@ const EventPage = ({ params }: EventPageProps) => {
           </article>
         </div>
 
-        {/* Order Summary */}
         {selectedTicket && (
           <div className="w-full bg-white/5 backdrop-blur-xl rounded-lg p-6 border border-gray-700/50 mt-8">
             <h3 className="text-xl font-semibold mb-4 flex items-center">

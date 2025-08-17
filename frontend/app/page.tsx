@@ -18,7 +18,8 @@ import axios from "axios";
 // Constants
 const images = ["/Hero (1).jpg", "/Hero (2).jpg", "/Hero (4).jpg"];
 const texts = ["Explore parties", "Book · SECURE · FAST", "Join the fun"];
-const BACKENDURL = "https://funnabparty-backend.vercel.app";
+// const BACKENDURL = "https://funnabparty-backend.vercel.app";
+const BACKENDURL = "http://localhost:2005";
 
 // Interfaces
 interface Ticket {
@@ -202,7 +203,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Typewriter effect
   useEffect(() => {
     if (charIndex < texts[textIndex].length) {
       const timeout = setTimeout(() => {
@@ -213,7 +213,6 @@ export default function Home() {
     }
   }, [charIndex, textIndex]);
 
-  // Fetch upcoming events
   useEffect(() => {
     const fetchUpcomingEvents = async () => {
       try {
@@ -227,7 +226,6 @@ export default function Home() {
     fetchUpcomingEvents();
   }, []);
 
-  // Fetch today's events
   useEffect(() => {
     const fetchTodaysEvents = async () => {
       try {
@@ -235,7 +233,7 @@ export default function Home() {
         setTodaysEventList(res.data.events || []);
       } catch (error) {
         console.error("Error fetching today's events:", error);
-        setTodaysEventList([]); // Safe fallback
+        setTodaysEventList([]);
       }
     };
     fetchTodaysEvents();

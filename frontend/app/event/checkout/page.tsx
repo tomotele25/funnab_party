@@ -3,6 +3,20 @@
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCart } from "lucide-react";
+import PaystackPop from "@paystack/inline-js";
+import axios, { AxiosError } from "axios";
+
+interface PaystackTransaction {
+  reference: string;
+  status: string;
+  message?: string;
+  gateway_response?: string;
+  paid_at?: string;
+  channel?: string;
+  currency?: string;
+  amount?: number;
+  [key: string]: any;
+}
 
 export default function CheckoutPage() {
   const { cart, totalPrice } = useCart();
@@ -12,16 +26,57 @@ export default function CheckoutPage() {
     email: "",
   });
 
+  const handlePaystackPayment = async () => {
+    if (cart.length === 0) return alert("Your cart is empty.");
+
+    try {
+      const eventId = cart[0]?.eventId;
+      const organizer = cart[0]?.organizer;
+
+      const res = await axios.post<{
+        authorization_url: string;
+        reference: string;
+      }>(`${process.env.NEXT_PUBLIC_API_URL}/api/payment/initialize`, {
+        email: form.email,
+        amount: totalPrice,
+        eventId,
+        organizer,
+      });
+
+      const { authorization_url, reference } = res.data;
+
+      // Initialize Paystack
+      const paystack = new PaystackPop();
+      paystack.newTransaction({
+        key: process.env.NEXT_PUBLIC_PAYSTACK_KEY!,
+        email: form.email,
+        amount: totalPrice * 100, // convert to kobo
+        reference,
+        onSuccess(transaction: PaystackTransaction) {
+          console.log("Payment successful:", transaction);
+          alert("✅ Payment successful!");
+          // TODO: redirect to thank-you page or clear cart
+        },
+        onCancel() {
+          console.log("Payment cancelled");
+          alert("Payment cancelled.");
+        },
+      });
+    } catch (err: unknown) {
+      const error = err as AxiosError;
+      console.error(error.response?.data || error.message);
+      alert("Payment initialization failed.");
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Checkout Data:", { ...form, cart, totalPrice });
-    alert("✅ Order submitted successfully!");
+    handlePaystackPayment();
   };
 
   return (
     <div className="bg-black text-white min-h-screen py-12 px-6">
       <div className="max-w-4xl mx-auto space-y-10">
-        {/* Page Title */}
         <h1 className="text-4xl sm:text-5xl font-extrabold text-center bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent">
           Checkout
         </h1>
@@ -78,12 +133,7 @@ export default function CheckoutPage() {
                     key={idx}
                     className="relative bg-gray-900 rounded-2xl border border-dashed border-pink-400 p-4 shadow-md"
                   >
-                    {/* Ticket tear circles */}
-                    <span className="absolute -left-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-black border border-pink-400 rounded-full"></span>
-                    <span className="absolute -right-3 top-1/2 transform -translate-y-1/2 w-6 h-6 bg-black border border-pink-400 rounded-full"></span>
-
                     <div className="flex justify-between items-center">
-                      {/* Ticket Info */}
                       <div className="flex items-center gap-4">
                         {item.image && (
                           <img
@@ -101,20 +151,9 @@ export default function CheckoutPage() {
                           </p>
                         </div>
                       </div>
-
-                      {/* Price */}
                       <p className="font-extrabold text-xl text-pink-400">
                         ₦{(item.price * item.quantity).toLocaleString()}
                       </p>
-                    </div>
-
-                    {/* Divider line (tear line effect) */}
-                    <div className="mt-4 border-t border-dashed border-gray-600"></div>
-
-                    {/* Ticket Footer */}
-                    <div className="flex justify-between mt-3 text-sm text-gray-400">
-                      <span>Admit One</span>
-                      <span>🎟️ Ticket</span>
                     </div>
                   </li>
                 ))}
@@ -133,7 +172,7 @@ export default function CheckoutPage() {
                 type="submit"
                 className="mt-6 w-full bg-gradient-to-r from-pink-500 to-cyan-500 text-white py-3 rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-lg"
               >
-                Place Order
+                Pay with Paystack
               </button>
             )}
           </div>

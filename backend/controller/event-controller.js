@@ -5,7 +5,7 @@ const getUpcomingEvent = async (req, res) => {
     const now = new Date();
 
     const events = await Event.find({ date: { $gte: now } })
-      .select("slug title location date image details tickets")
+      .select("slug title location date image details tickets organizer ")
       .sort({ date: 1 });
 
     if (!events || events.length === 0) {
@@ -41,7 +41,7 @@ const getTodaysEvents = async (req, res) => {
     const events = await Event.find({
       date: { $gte: startOfDay, $lte: endOfDay },
     })
-      .select("slug title location date details image tickets ")
+      .select("slug title location date details image tickets organizer ")
       .sort({ date: 1 });
 
     if (!events || events.length === 0) {
