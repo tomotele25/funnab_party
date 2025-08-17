@@ -5,7 +5,7 @@ const app = express();
 const connectToDb = require("../db/db");
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://funnabparty.vercel.app/",
+  "https://funnabparty.vercel.app",
 ];
 
 // routes
