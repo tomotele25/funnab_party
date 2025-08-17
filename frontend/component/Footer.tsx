@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import logo from "../public/logo.png";
+import logo from "../public/logo.jpg";
 import { Facebook, Instagram, Twitter } from "lucide-react";
 
 const Footer = () => {

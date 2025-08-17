@@ -9,10 +9,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navLinks = [
-    {
-      name: "Dashboard",
-      href: "/organizer/dashboard",
-    },
+    { name: "Dashboard", href: "/organizer/dashboard" },
     { name: "Events", href: "/organizer/events", icon: <Calendar size={18} /> },
     { name: "Tickets", href: "/organizer/tickets", icon: <Ticket size={18} /> },
     {
@@ -33,7 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       >
         <div className="flex flex-col h-full justify-between">
           <div>
-            {/* Header / Brand */}
+            {/* Brand */}
             <div className="p-4 border-b">
               <h1 className="text-xl font-bold text-black">Organizer</h1>
             </div>
@@ -56,7 +53,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </nav>
           </div>
 
-          {/* Logout button */}
+          {/* Logout */}
           <div className="p-4 border-t">
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
@@ -70,19 +67,28 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 md:ml-52">
-        {/* Top bar for mobile */}
-        <header className="flex items-center justify-between bg-white p-3 shadow md:hidden">
-          <h2 className="text-lg font-bold">Organizer</h2>
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-md border border-gray-300"
-          >
-            <Menu size={20} />
-          </button>
+      <div className="flex-1 md:ml-52 flex flex-col">
+        {/* Fixed Header */}
+        <header className="fixed top-0 right-0 left-0 md:left-52 bg-white p-4 shadow z-10 flex items-center justify-between">
+          {/* Page title */}
+          <h2 className="text-lg font-bold text-black">Dashboard</h2>
+
+          {/* Right side */}
+          <div className="flex items-center gap-3">
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden p-2 rounded-md border border-gray-300"
+            >
+              <Menu size={20} />
+            </button>
+            {/* Dummy profile avatar */}
+            <div className="w-8 h-8 rounded-full bg-gray-300" />
+          </div>
         </header>
 
-        <main className="p-4">{children}</main>
+        {/* Page body (add padding for fixed header) */}
+        <main className="p-4 flex-1 pt-20">{children}</main>
       </div>
     </div>
   );

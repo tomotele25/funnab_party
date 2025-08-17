@@ -5,14 +5,18 @@ import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import axios from "axios";
+import Loader from "@/component/Loader";
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.role) {
+    if (session?.user?.role) {
       const role = session.user.role;
       if (role === "customer") router.push("/");
       else if (role === "organizer") router.push("/organizer");
@@ -23,18 +27,34 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      setLoading(true);
+      const res = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    });
-
-    if (res?.error) {
-      console.error("Login failed:", res.error);
-      toast.error(res?.error || "Invalid email or password");
-    } else {
-      toast.success("Login successfully");
+      if (res?.error) {
+        console.error("Login failed:", res.error);
+        toast.error(res?.error || "Invalid email or password");
+      } else {
+        toast.success("Login successfully");
+      }
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          error.response?.data?.message ||
+            error.message ||
+            "Something went wrong. Try again."
+        );
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Something went wrong. Try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,12 +99,11 @@ export default function Login() {
               required
             />
           </div>
-
           <button
             type="submit"
             className="w-full bg-black text-white py-2 rounded-lg font-medium hover:bg-gray-900 transition"
           >
-            Sign In
+            {loading ? <Loader /> : "Sign Up"}
           </button>
         </form>
 

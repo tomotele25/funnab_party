@@ -7,7 +7,8 @@ const allowedOrigins = ["http://localhost:3000"];
 
 // routes
 const authRoute = require("../routes/auth");
-
+const organizerRoute = require("../routes/organizer");
+const eventRoute = require("../routes/event-route");
 const PORT = 2005;
 app.use(
   cors({
@@ -32,7 +33,12 @@ app.get("/", (req, res) => {
 const startServer = async () => {
   try {
     await connectToDb();
+
+    // routes
     app.use("/api/auth", authRoute);
+    app.use("/api", organizerRoute);
+    app.use("/api", eventRoute);
+
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
