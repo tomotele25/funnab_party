@@ -10,7 +10,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const navLinks = [
     { name: "Dashboard", href: "/organizer/dashboard" },
-    { name: "Events", href: "/organizer/events", icon: <Calendar size={18} /> },
+    {
+      name: "Events",
+      href: "/organizer/manageEvents",
+      icon: <Calendar size={18} />,
+    },
     { name: "Tickets", href: "/organizer/tickets", icon: <Ticket size={18} /> },
     {
       name: "Settings",

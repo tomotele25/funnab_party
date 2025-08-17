@@ -3,7 +3,10 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const connectToDb = require("../db/db");
-const allowedOrigins = ["http://localhost:3000"];
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://funnabparty.vercel.app/",
+];
 
 // routes
 const authRoute = require("../routes/auth");

@@ -55,4 +55,21 @@ const getTodaysEvents = async (req, res) => {
   }
 };
 
-module.exports = { getTodaysEvents, getUpcomingEvent };
+getEventBySlug = async (req, res) => {
+  const { slug } = req.params;
+
+  try {
+    const event = await Event.findOne({ slug });
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.json({ event });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { getTodaysEvents, getUpcomingEvent, getEventBySlug };
