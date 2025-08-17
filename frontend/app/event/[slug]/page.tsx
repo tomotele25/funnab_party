@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import axios from "axios";
-
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   MapPin,
@@ -14,11 +13,10 @@ import {
   Plus,
   ShoppingCart,
 } from "lucide-react";
-
 import SkeletonLoader from "@/component/SkeletonLoader";
 import { useCart } from "@/context/CartContext";
 
-// ------------------ Types ------------------
+// ---------- TYPES ----------
 interface Ticket {
   type: string;
   price: number;
@@ -36,24 +34,35 @@ interface Event {
   tickets: Ticket[];
 }
 
-// ------------------ Component ------------------
-const EventPage = ({ params }: any) => {
+// App Router passes params as plain object
+interface EventPageParams {
+  slug: string;
+}
+
+interface EventPageProps {
+  params: EventPageParams;
+}
+
+// ---------- COMPONENT ----------
+const EventPage = ({ params }: EventPageProps) => {
   const { slug } = params;
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [quantity, setQuantity] = useState(1);
 
   const { addToCart } = useCart();
   const router = useRouter();
 
-  // Fetch event data
+  // Fetch event
   useEffect(() => {
     const fetchEvent = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:2005/api/events/${slug}`);
+        const res = await axios.get<{ event: Event }>(
+          `http://localhost:2005/api/events/${slug}`
+        );
         setEvent(res.data.event);
       } catch (err) {
         console.error(err);
@@ -62,23 +71,23 @@ const EventPage = ({ params }: any) => {
         setLoading(false);
       }
     };
+
     fetchEvent();
   }, [slug]);
 
-  // Select a ticket
+  // Ticket selection
   const handleSelectTicket = (ticket: Ticket) => {
     setSelectedTicket(ticket);
     setQuantity(1);
   };
 
-  // Change ticket quantity
   const handleQuantityChange = (delta: number) => {
     if (!selectedTicket) return;
     const maxQty = selectedTicket.quantity - selectedTicket.sold;
     setQuantity(Math.max(1, Math.min(quantity + delta, maxQty)));
   };
 
-  // Add to cart and navigate
+  // Add to cart & navigate
   const handleCheckout = () => {
     if (!event || !selectedTicket) return;
 
@@ -93,21 +102,20 @@ const EventPage = ({ params }: any) => {
     router.push("/event/checkout");
   };
 
-  if (loading) {
+  // ---------- RENDER ----------
+  if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="transition-opacity duration-500 bg-black min-h-screen">
         <SkeletonLoader />
       </div>
     );
-  }
 
-  if (error || !event) {
+  if (error || !event)
     return (
       <div className="min-h-screen flex justify-center items-center text-white bg-black">
         {error || "Event not found."}
       </div>
     );
-  }
 
   const formattedDate = new Intl.DateTimeFormat("en-US", {
     weekday: "long",
@@ -118,17 +126,16 @@ const EventPage = ({ params }: any) => {
 
   return (
     <div className="bg-black text-white min-h-screen font-sans">
-      <section className="mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <section className="relative mx-auto py-12 px-4 sm:px-6 lg:px-8 pb-24">
         {/* Back Button */}
         <Link
           href="/events"
           className="flex items-center mb-6 text-pink-400 hover:text-pink-300 transition-all duration-300"
         >
-          <ArrowLeft className="w-6 h-6 mr-2" />
-          Back to Events
+          <ArrowLeft className="w-6 h-6 mr-2" /> Back to Events
         </Link>
 
-        <div className="flex flex-col md:grid md:grid-cols-3 md:gap-8">
+        <div className="relative z-10 flex flex-col md:grid md:grid-cols-3 md:gap-8">
           {/* Event Image */}
           <div className="md:col-span-1 mb-8 md:mb-0">
             <div className="relative rounded-xl overflow-hidden border border-gray-700/50">
@@ -143,7 +150,7 @@ const EventPage = ({ params }: any) => {
           </div>
 
           {/* Event Details */}
-          <article className="md:col-span-2 bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50">
+          <article className="md:col-span-2 bg-white/3 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50">
             <h1 className="text-3xl font-bold mb-4">{event.title}</h1>
             <div className="space-y-2 mb-6">
               <p className="text-cyan-300 flex items-center">
