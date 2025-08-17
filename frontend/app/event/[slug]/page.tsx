@@ -37,7 +37,7 @@ interface Event {
 interface EventPageProps {
   params: Promise<{ slug: string }>;
 }
-const BACKENDURL = "https://funnabparty-backend.vercel.app/";
+const BACKENDURL = "https://funnabparty-backend.vercel.app";
 // ---------- COMPONENT ----------
 const EventPage = ({ params }: EventPageProps) => {
   const { slug } = use(params);
