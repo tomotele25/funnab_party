@@ -51,18 +51,18 @@ const eventSchema = new mongoose.Schema(
       required: true,
     },
     tickets: [ticketSchema],
-    accountNumber: {
-      type: String,
-      required: true,
-    },
-    bankName: {
-      type: String,
-      required: true,
-    },
-    subaccountId: {
-      type: String,
-      required: true,
-    },
+    // accountNumber: {
+    //   type: String,
+    //   required: true,
+    // },
+    // bankName: {
+    //   type: String,
+    //   required: true,
+    // },
+    // subaccountId: {
+    //   type: String,
+    //   required: true,
+    // },
   },
   { timestamps: true }
 );

@@ -13,7 +13,7 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
-  const BACKENDURL = "https://funnabparty-backend.vercel.app/";
+  const BACKENDURL = "https://funnabparty-backend.vercel.app";
   // : "http://localhost:2005";
   const router = useRouter();
 
