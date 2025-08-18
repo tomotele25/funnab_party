@@ -247,7 +247,7 @@ const EventPage = ({ params }: EventPageProps) => {
                 <strong>Total:</strong> ₦
                 {(selectedTicket.price * quantity).toLocaleString()}
               </p>
-              <Link href={`/event/${slug}/checkout`}>
+              <Link href={`/event/checkout`}>
                 <button
                   onClick={handleAddToCart}
                   className="w-full px-6 py-3 bg-gradient-to-r from-pink-400 to-cyan-400 text-white font-semibold rounded-lg hover:bg-gradient-to-r hover:from-cyan-400 hover:to-pink-400 transition-all duration-300 hover:scale-105 glow-button flex items-center justify-center"
