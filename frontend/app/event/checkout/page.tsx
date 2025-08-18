@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCart } from "lucide-react";
 import PaystackPop from "@paystack/inline-js";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 
 interface PaystackTransaction {
   reference: string;

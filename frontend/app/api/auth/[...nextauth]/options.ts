@@ -1,7 +1,6 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from "axios";
-import type { AxiosError } from "axios";
 
 const BACKENDURL = "https://funnabparty-backend.vercel.app/";
 // : "http://localhost:2005";
