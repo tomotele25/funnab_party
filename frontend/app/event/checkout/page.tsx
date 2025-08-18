@@ -63,7 +63,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
     try {
       const response = await axios.post<PaymentResponse>(
-        "http://localhost:2005/payment/initialize",
+        "https://funnabparty-backend.vercel.app/api/payment/initialize",
         {
           email: formData.email,
           amount: totalPrice * 100,
