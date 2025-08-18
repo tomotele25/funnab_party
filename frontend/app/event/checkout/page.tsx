@@ -62,15 +62,11 @@ export default function CheckoutPage() {
           alert("Payment cancelled.");
         },
       });
-    } catch (err) {
-      if (err instanceof axios.AxiosError) {
-        console.error(err.response?.data || err.message);
-      } else if (err instanceof Error) {
-        console.error(err.message);
-      } else {
-        console.error("Unexpected error", err);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Payment error:", error.message);
       }
-      alert("Payment initialization failed.");
+      return null;
     }
   };
 
