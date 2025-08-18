@@ -3,8 +3,7 @@ const mongoose = require("mongoose");
 const transactionSchema = mongoose.Schema(
   {
     eventId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Event",
+      type: String,
       required: true,
     },
     organizer: {

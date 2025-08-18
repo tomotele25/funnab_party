@@ -1,31 +1,47 @@
+require("dotenv").config();
 const axios = require("axios");
 const Transaction = require("../models/transaction");
 
 // Initialize Paystack payment
 const initializePayment = async (req, res) => {
   try {
-    const { eventId, organizer, email, amount } = req.body;
+    const { email, amount, items } = req.body;
 
-    if (!eventId || !organizer || !email || !amount) {
+    if (
+      !email ||
+      !amount ||
+      !items ||
+      !Array.isArray(items) ||
+      items.length === 0
+    ) {
       return res.status(400).json({ message: "Missing required fields." });
     }
 
-    // Create transaction in DB
-    const transaction = await Transaction.create({
-      eventId,
-      organizer,
-      amount,
-      paystackRefrence: `TRX-${Date.now()}`,
-    });
+    // Create transactions for each item
+    const transactions = await Promise.all(
+      items.map((item) => {
+        if (!item.eventId || !item.organizer) {
+          throw new Error("Item is missing eventId or organizer");
+        }
 
-    // Initialize Paystack transaction
+        return Transaction.create({
+          eventId: item.eventId,
+          organizer: item.organizer,
+          amount: item.price * item.quantity,
+          paystackRefrence: `TRX-${Date.now()}-${item.id}`,
+        });
+      })
+    );
+
+    const firstTransaction = transactions[0];
+
     const paystackRes = await axios.post(
       "https://api.paystack.co/transaction/initialize",
       {
         email,
-        amount: amount * 100, // Paystack expects kobo
-        reference: transaction.paystackRefrence,
-        callback_url: "https://funnabparty.vercel.app/event/payment", // Update to your live URL
+        amount: amount * 100,
+        reference: firstTransaction.paystackRefrence,
+        callback_url: "https://funnabparty.vercel.app/event/payment",
       },
       {
         headers: {
@@ -37,7 +53,7 @@ const initializePayment = async (req, res) => {
 
     return res.status(200).json({
       authorization_url: paystackRes.data.data.authorization_url,
-      reference: transaction.paystackRefrence,
+      reference: firstTransaction.paystackRefrence,
     });
   } catch (error) {
     console.error(error.response?.data || error.message);
@@ -45,7 +61,6 @@ const initializePayment = async (req, res) => {
   }
 };
 
-// Verify Paystack payment
 const verifyPayment = async (req, res) => {
   try {
     const { reference } = req.query;
@@ -65,9 +80,8 @@ const verifyPayment = async (req, res) => {
 
     const { status, amount, customer } = paystackRes.data.data;
 
-    // Update transaction status in DB
     const transaction = await Transaction.findOneAndUpdate(
-      { paystackRefrence: reference },
+      { paystackReference: reference },
       { status: status === "success" ? "success" : "failed" },
       { new: true }
     );
