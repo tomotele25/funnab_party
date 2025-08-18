@@ -1,181 +1,261 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import { useCart } from "@/context/CartContext";
-import { ShoppingCart } from "lucide-react";
-import PaystackPop from "@paystack/inline-js";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { ArrowLeft, ShoppingCart, User, Mail } from "lucide-react";
 import axios from "axios";
 
-interface PaystackTransaction {
-  reference: string;
-  status: string;
-  message?: string;
-  gateway_response?: string;
-  paid_at?: string;
-  channel?: string;
-  currency?: string;
-  amount?: number;
-  [key: string]: unknown; // replaces `any`
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  eventId: string;
+  organizer: string;
 }
 
-const BACKENDURL = "https://funnabparty-backend.vercel.app";
+interface PaymentResponse {
+  authorization_url: string;
+}
 
-export default function CheckoutPage() {
-  const { cart, totalPrice } = useCart();
+interface CheckoutPageProps {
+  params: Promise<{ slug: string }>;
+}
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-  });
+export default function CheckoutPage({ params }: CheckoutPageProps) {
+  const { slug } = use(params);
+  const { cart, removeFromCart, clearCart, totalPrice } = useCart();
+  const router = useRouter();
+  const [formData, setFormData] = useState({ name: "", email: "" });
+  const [formErrors, setFormErrors] = useState({ name: "", email: "" });
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-  const handlePaystackPayment = async () => {
-    if (cart.length === 0) return alert("Your cart is empty.");
+  // Log cart for debugging
+  console.log("Cart contents for slug:", slug, cart);
 
+  // Handle form input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  // Validate form
+  const validateForm = () => {
+    let isValid = true;
+    const errors = { name: "", email: "" };
+
+    if (!formData.name.trim()) {
+      errors.name = "Name is required";
+      isValid = false;
+    }
+    if (!formData.email.trim()) {
+      errors.email = "Email is required";
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = "Invalid email format";
+      isValid = false;
+    }
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
+  // Handle checkout with payment redirect
+  const handleCheckout = async () => {
+    if (!validateForm()) return;
+    setIsProcessingPayment(true);
     try {
-      const eventId = cart[0]?.eventId;
-      const organizer = cart[0]?.organizer;
-
-      const res = await axios.post(`${BACKENDURL}/api/payment/initialize`, {
-        email: form.email,
-        amount: totalPrice,
-        eventId,
-        organizer,
-      });
-
-      const { reference } = res.data;
-
-      const PaystackPop = (await import("@paystack/inline-js")).default;
-      const paystack = new PaystackPop();
-
-      paystack.newTransaction({
-        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
-        email: form.email,
-        amount: totalPrice * 100,
-        reference,
-        onSuccess(transaction: PaystackTransaction) {
-          console.log("Payment successful:", transaction);
-          alert("✅ Payment successful!");
-        },
-        onCancel() {
-          console.log("Payment cancelled");
-          alert("Payment cancelled.");
-        },
-      });
-    } catch (error: unknown) {
-      if (error instanceof Error)
-        console.error("Payment error:", error.message);
-      return null;
+      const response = await axios.post<PaymentResponse>(
+        "/payment/initialize",
+        {
+          email: formData.email,
+          amount: totalPrice * 100, // Convert to kobo for Paystack
+          cart,
+          eventSlug: slug,
+        }
+      );
+      const { authorization_url } = response.data;
+      // Redirect to payment gateway using router
+      router.push(authorization_url);
+    } catch (err) {
+      console.error("Payment error:", err);
+      alert("Payment initiation failed. Please try again.");
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handlePaystackPayment();
-  };
+
+  if (cart.length === 0) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 sm:px-6">
+        <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50 text-center">
+          <p className="text-lg font-medium flex items-center justify-center gap-2">
+            <ShoppingCart className="w-5 h-5 text-pink-400" />
+            Your cart is empty.
+          </p>
+          <button
+            onClick={() => router.push(`/event/${slug}`)}
+            className="mt-6 px-6 py-3 bg-gradient-to-r from-pink-400 to-cyan-400 text-white font-semibold rounded-lg hover:bg-gradient-to-r hover:from-cyan-400 hover:to-pink-400 transition-all duration-300 hover:scale-105 glow-button"
+          >
+            Back to Event
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-black text-white min-h-screen py-12 px-6">
-      <div className="max-w-4xl mx-auto space-y-10">
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-center bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent">
+    <div className="min-h-screen bg-black text-white font-sans flex flex-col">
+      {/* Header with Back Button */}
+      <div className="flex items-center gap-3 p-4 sm:p-6 border-b border-gray-800 bg-white/5 backdrop-blur-xl">
+        <button
+          onClick={() => router.push(`/event/${slug}`)}
+          className="flex items-center gap-2 text-pink-400 hover:text-pink-300 transition-all duration-300"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-medium">Back</span>
+        </button>
+        <h1 className="text-xl sm:text-2xl font-bold flex-1 text-center bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent">
           Checkout
         </h1>
+      </div>
 
-        <form id="checkout-form" onSubmit={handleSubmit} className="space-y-8">
-          {/* User Details */}
-          <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50">
-            <h2 className="text-2xl font-semibold mb-6 text-pink-400">
-              Your Details
-            </h2>
+      {/* Main Content */}
+      <div className="flex-1 p-4 sm:p-6 space-y-6 max-w-3xl mx-auto w-full">
+        {/* Cart Items */}
+        <div className="space-y-4">
+          <h2 className="text-xl sm:text-2xl font-semibold text-white flex items-center gap-2">
+            <ShoppingCart className="w-5 h-5 text-pink-400" />
+            Your Cart
+          </h2>
+          <ul className="space-y-4">
+            {cart.map((item, index) => (
+              <li
+                key={`${item.id}-${index}`}
+                className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-gray-700/50 hover:border-pink-400/50 transition-all duration-300 glow-effect"
+              >
+                <div className="mb-2 sm:mb-0">
+                  <p className="font-semibold text-base sm:text-lg text-white">
+                    {item.name || "Unknown Ticket"}
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    {item.quantity} × ₦{(item.price || 0).toLocaleString()}
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    Organizer: {item.organizer || "Unknown"}
+                  </p>
+                  {item.image && (
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={50}
+                      height={50}
+                      className="mt-2 object-cover rounded"
+                    />
+                  )}
+                </div>
+                <button
+                  onClick={() => removeFromCart(item.id)}
+                  className="px-3 py-1.5 bg-red-600 hover:bg-red-500 rounded-lg text-sm font-medium text-white transition-all duration-300 w-full sm:w-auto"
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-gray-200">
-                Full Name
+        {/* Form */}
+        <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 sm:p-6 border border-gray-700/50">
+          <h2 className="text-xl sm:text-2xl font-semibold text-white flex items-center gap-2 mb-4">
+            <User className="w-5 h-5 text-cyan-400" />
+            Your Details
+          </h2>
+          <form className="space-y-4">
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-200">
+                <User className="w-4 h-4 text-pink-400" />
+                Name
               </label>
               <input
                 type="text"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full mt-1 px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white focus:border-pink-400 focus:ring-2 focus:ring-pink-400/50 outline-none transition-all duration-300"
                 placeholder="Enter your name"
-                required
               />
+              {formErrors.name && (
+                <p className="mt-1 text-sm text-red-400">{formErrors.name}</p>
+              )}
             </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2 text-gray-200">
-                Email Address
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-200">
+                <Mail className="w-4 h-4 text-cyan-400" />
+                Email
               </label>
               <input
                 type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full mt-1 px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/50 outline-none transition-all duration-300"
                 placeholder="Enter your email"
-                required
               />
+              {formErrors.email && (
+                <p className="mt-1 text-sm text-red-400">{formErrors.email}</p>
+              )}
             </div>
-          </div>
+          </form>
+        </div>
 
-          {/* Order Summary */}
-          <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50">
-            <h2 className="text-2xl font-semibold mb-6 flex items-center text-cyan-400">
-              <ShoppingCart className="w-6 h-6 mr-2" />
-              Order Summary
-            </h2>
+        {/* Total */}
+        <div className="text-lg sm:text-xl font-semibold flex justify-between items-center">
+          <span className="text-white">Total</span>
+          <span className="text-pink-400">₦{totalPrice.toLocaleString()}</span>
+        </div>
 
-            {cart.length === 0 ? (
-              <p className="text-gray-400">Your cart is empty.</p>
-            ) : (
-              <ul className="space-y-6">
-                {cart.map((item, idx) => (
-                  <li
-                    key={idx}
-                    className="relative bg-gray-900 rounded-2xl border border-dashed border-pink-400 p-4 shadow-md"
-                  >
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-4">
-                        {item.image && (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-20 h-20 rounded-xl object-cover border border-gray-700"
-                          />
-                        )}
-                        <div>
-                          <p className="font-bold text-lg text-white">
-                            {item.name}
-                          </p>
-                          <p className="text-gray-400 text-sm">
-                            {item.quantity} × ₦{item.price.toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                      <p className="font-extrabold text-xl text-pink-400">
-                        ₦{(item.price * item.quantity).toLocaleString()}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <div className="flex justify-between font-bold text-xl mt-6">
-              <span>Total:</span>
-              <span className="text-cyan-400">
-                ₦{totalPrice.toLocaleString()}
-              </span>
-            </div>
-
-            {cart.length > 0 && (
-              <button
-                type="submit"
-                className="mt-6 w-full bg-gradient-to-r from-pink-500 to-cyan-500 text-white py-3 rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-lg"
-              >
-                Pay with Paystack
-              </button>
-            )}
-          </div>
-        </form>
+        {/* Payment Logo */}
+        <div className="flex justify-center mt-4">
+          <Image
+            src="/payment-logo.png" // Replace with actual payment logo path
+            alt="Payment Provider Logo"
+            width={100}
+            height={40}
+            className="object-contain"
+          />
+        </div>
       </div>
+
+      {/* Sticky Footer */}
+      <div className="p-4 sm:p-6 border-t border-gray-800 bg-black/95 backdrop-blur-xl sticky bottom-0 max-w-3xl mx-auto w-full">
+        <button
+          onClick={handleCheckout}
+          disabled={isProcessingPayment}
+          className={`w-full px-4 py-3 bg-gradient-to-r from-pink-400 to-cyan-400 text-white font-bold rounded-lg hover:bg-gradient-to-r hover:from-cyan-400 hover:to-pink-400 transition-all duration-300 hover:scale-105 glow-button flex items-center justify-center ${
+            isProcessingPayment ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          <ShoppingCart className="w-5 h-5 mr-2" />
+          {isProcessingPayment ? "Processing..." : "Pay Now"}
+        </button>
+      </div>
+
+      <style jsx>{`
+        .glow-button {
+          box-shadow: 0 0 10px rgba(255, 105, 180, 0.3);
+        }
+        .glow-button:hover:not(:disabled) {
+          box-shadow: 0 0 15px rgba(255, 105, 180, 0.5);
+        }
+        .glow-effect:hover {
+          box-shadow: 0 0 10px rgba(255, 0, 128, 0.3);
+        }
+      `}</style>
     </div>
   );
 }

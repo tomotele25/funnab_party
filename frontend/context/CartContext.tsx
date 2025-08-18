@@ -8,7 +8,7 @@ import {
   ReactNode,
 } from "react";
 
-type CartItem = {
+interface CartItem {
   id: string;
   name: string;
   price: number;
@@ -16,15 +16,15 @@ type CartItem = {
   image?: string;
   eventId: string;
   organizer: string;
-};
+}
 
-type CartContextType = {
+interface CartContextType {
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
   totalPrice: number;
-};
+}
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -34,7 +34,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const storedCart = localStorage.getItem("cart");
     if (storedCart) {
-      setCart(JSON.parse(storedCart));
+      try {
+        const parsedCart = JSON.parse(storedCart);
+        if (Array.isArray(parsedCart)) {
+          setCart(parsedCart);
+        }
+      } catch (err) {
+        console.error("Failed to parse cart from localStorage:", err);
+      }
     }
   }, []);
 
@@ -43,11 +50,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [cart]);
 
   const addToCart = (item: CartItem) => {
+    if (!item.id || !item.price || item.quantity < 1) {
+      console.warn("Invalid cart item:", item);
+      return;
+    }
     setCart((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
         return prev.map((i) =>
-          i.id === item.id ? { ...i, quantity: item.quantity } : i
+          i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
         );
       }
       return [...prev, item];
@@ -63,7 +74,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const totalPrice = cart.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) => total + (item.price || 0) * (item.quantity || 0),
     0
   );
 
