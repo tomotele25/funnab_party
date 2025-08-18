@@ -18,8 +18,8 @@ import axios from "axios";
 // Constants
 const images = ["/Hero (1).jpg", "/Hero (2).jpg", "/Hero (4).jpg"];
 const texts = ["Explore parties", "Book · SECURE · FAST", "Join the fun"];
-// const BACKENDURL = "https://funnabparty-backend.vercel.app";
-const BACKENDURL = "http://localhost:2005";
+const BACKENDURL = "https://funnabparty-backend.vercel.app";
+// const BACKENDURL = "http://localhost:2005";
 
 // Interfaces
 interface Ticket {
