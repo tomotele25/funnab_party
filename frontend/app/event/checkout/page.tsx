@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -22,11 +22,10 @@ interface PaymentResponse {
 }
 
 interface CheckoutPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
-
 export default function CheckoutPage({ params }: CheckoutPageProps) {
-  const { slug } = params;
+  const { slug } = use(params);
   const { cart, removeFromCart, clearCart, totalPrice } = useCart();
   const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "" });
