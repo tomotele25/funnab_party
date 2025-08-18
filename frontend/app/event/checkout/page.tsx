@@ -70,16 +70,15 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setIsProcessingPayment(true);
     try {
       const response = await axios.post<PaymentResponse>(
-        "/payment/initialize",
+        "https://funnabparty-backend.vercel.app/payment/initialize",
         {
           email: formData.email,
-          amount: totalPrice * 100, // Convert to kobo for Paystack
+          amount: totalPrice * 100,
           cart,
           eventSlug: slug,
         }
       );
       const { authorization_url } = response.data;
-      // Redirect to payment gateway using router
       router.push(authorization_url);
     } catch (err) {
       console.error("Payment error:", err);
