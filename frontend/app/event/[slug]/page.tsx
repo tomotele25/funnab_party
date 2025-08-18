@@ -121,13 +121,14 @@ const EventPage = ({ params }: EventPageProps) => {
 
   return (
     <div className="bg-black text-white min-h-screen font-sans">
-      <section className="relative mx-auto py-12 px-4 sm:px-6 lg:px-8 pb-24">
-        <Link
-          href="/events"
-          className="flex items-center mb-6 text-pink-400 hover:text-pink-300 transition-all duration-300"
+      <section className="relative mx-auto py-1 px-4 sm:px-6 lg:px-8 pb-24">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center mb-6 pt-5 text-pink-400 hover:text-pink-300 transition-all duration-300"
         >
-          <ArrowLeft className="w-6 h-6 mr-2" /> Back to Events
-        </Link>
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-medium">Back</span>
+        </button>
 
         <div className="relative z-10 flex flex-col md:grid md:grid-cols-3 md:gap-8">
           <div className="md:col-span-1 mb-8 md:mb-0">

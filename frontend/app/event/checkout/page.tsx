@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, ShoppingCart, User, Mail } from "lucide-react";
 import axios from "axios";
+import Loader from "@/component/Loader";
 const BACKENDURL = "https://funnabparty-backend.vercel.app";
 
 export default function CheckoutPage() {
@@ -86,7 +87,7 @@ export default function CheckoutPage() {
             Your cart is empty.
           </p>
           <button
-            onClick={() => router.push("/events")}
+            onClick={() => router.push("/")}
             className="mt-6 px-6 py-3 bg-gradient-to-r from-pink-400 to-cyan-400 text-white font-semibold rounded-lg hover:bg-gradient-to-r hover:from-cyan-400 hover:to-pink-400 transition-all duration-300 hover:scale-105 glow-button"
           >
             Back to Events
@@ -101,7 +102,7 @@ export default function CheckoutPage() {
       {/* Header */}
       <div className="flex items-center gap-3 p-4 sm:p-6 border-b border-gray-800 bg-white/5 backdrop-blur-xl">
         <button
-          onClick={() => router.push("/events")}
+          onClick={() => router.back()}
           className="flex items-center gap-2 text-pink-400 hover:text-pink-300 transition-all duration-300"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -114,43 +115,63 @@ export default function CheckoutPage() {
 
       <div className="flex-1 p-4 sm:p-6 space-y-6 max-w-3xl mx-auto w-full">
         {/* Cart Items */}
-        <div className="space-y-4">
+        <div className="space-y-6 ml-4 mr-4">
           <h2 className="text-xl sm:text-2xl font-semibold text-white flex items-center gap-2">
             <ShoppingCart className="w-5 h-5 text-pink-400" />
-            Your Cart
+            Your Tickets
           </h2>
-          <ul className="space-y-4">
+          <ul className="space-y-6">
             {cart.map((item, index) => (
               <li
                 key={`${item.id}-${index}`}
-                className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-gray-700/50 hover:border-pink-400/50 transition-all duration-300 glow-effect"
+                className="relative bg-white/10 backdrop-blur-lg rounded-xl p-5 border border-gray-600/50 hover:border-pink-400/50 transition-all duration-300 ticket-item shadow-lg"
+                style={{
+                  clipPath:
+                    "polygon(5% 0%, 95% 0%, 100% 10%, 100% 90%, 95% 100%, 5% 100%, 0% 90%, 0% 10%)",
+                }}
               >
-                <div className="mb-2 sm:mb-0">
-                  <p className="font-semibold text-base sm:text-lg text-white">
-                    {item.name}
-                  </p>
-                  <p className="text-gray-400 text-sm">
-                    {item.quantity} × ₦{item.price.toLocaleString()}
-                  </p>
-                  <p className="text-gray-400 text-sm">
-                    Organizer: {item.organizer}
-                  </p>
-                  {item.image && (
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      width={50}
-                      height={50}
-                      className="mt-2 object-cover rounded"
-                    />
-                  )}
+                {/* Perforated Edge Effect */}
+                <div className="absolute left-[-8px] top-1/2 transform -translate-y-1/2 w-4 h-4 bg-black rounded-full border border-gray-600/50"></div>
+                <div className="absolute right-[-8px] top-1/2 transform -translate-y-1/2 w-4 h-4 bg-black rounded-full border border-gray-600/50"></div>
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-700/50 border-r border-dashed border-gray-500"></div>
+                <div className="absolute right-0 top-0 bottom-0 w-1 bg-gray-700/50 border-l border-dashed border-gray-500"></div>
+
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-400/10 to-cyan-400/10 opacity-50 rounded-xl"></div>
+
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10">
+                  <div className="flex items-center gap-4">
+                    {item.image && (
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        width={70}
+                        height={70}
+                        className="object-cover rounded-lg border border-pink-400/30 shadow-sm"
+                      />
+                    )}
+                    <div>
+                      <p className="font-semibold text-base sm:text-lg text-white bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                        {item.name}
+                      </p>
+                      <p className="text-gray-300 text-sm">
+                        {item.quantity} × ₦{item.price.toLocaleString()}
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        Organizer: {item.organizer}
+                      </p>
+                      <p className="text-xs text-cyan-400 mt-1 italic">
+                        Ticket #{(index + 1).toString().padStart(4, "0")}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => removeFromCart(item.id)}
+                    className="mt-4 sm:mt-0 px-3 py-1.5 bg-red-600 hover:bg-red-500 rounded-lg text-sm font-medium text-white transition-all duration-300 w-full sm:w-auto shadow-md hover:shadow-lg"
+                  >
+                    Remove
+                  </button>
                 </div>
-                <button
-                  onClick={() => removeFromCart(item.id)}
-                  className="px-3 py-1.5 bg-red-600 hover:bg-red-500 rounded-lg text-sm font-medium text-white transition-all duration-300 w-full sm:w-auto"
-                >
-                  Remove
-                </button>
               </li>
             ))}
           </ul>
@@ -205,17 +226,6 @@ export default function CheckoutPage() {
           <span className="text-white">Total</span>
           <span className="text-pink-400">₦{totalPrice.toLocaleString()}</span>
         </div>
-
-        {/* Payment Logo */}
-        <div className="flex justify-center mt-4">
-          <Image
-            src="/payment-logo.png"
-            alt="Payment Provider Logo"
-            width={100}
-            height={40}
-            className="object-contain"
-          />
-        </div>
       </div>
 
       {/* Sticky Footer */}
@@ -228,19 +238,28 @@ export default function CheckoutPage() {
           }`}
         >
           <ShoppingCart className="w-5 h-5 mr-2" />
-          {isProcessingPayment ? "Processing..." : "Pay Now"}
+          {isProcessingPayment ? <Loader /> : "Pay Now"}
         </button>
       </div>
 
       <style jsx>{`
+        .ticket-item {
+          box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+          background: linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.05)
+          );
+        }
+        .ticket-item:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 8px 25px rgba(255, 105, 180, 0.4);
+        }
         .glow-button {
           box-shadow: 0 0 10px rgba(255, 105, 180, 0.3);
         }
         .glow-button:hover:not(:disabled) {
           box-shadow: 0 0 15px rgba(255, 105, 180, 0.5);
-        }
-        .glow-effect:hover {
-          box-shadow: 0 0 10px rgba(255, 0, 128, 0.3);
         }
       `}</style>
     </div>

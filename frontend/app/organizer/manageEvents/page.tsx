@@ -24,6 +24,26 @@ export default function EventManagerPage() {
     { type: string; price: string; quantity: string; deadline: string }[]
   >([{ type: "", price: "", quantity: "", deadline: "" }]);
 
+  // bank and account
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+
+  const banks = [
+    { name: "Access Bank", code: "044" },
+    { name: "EcoBank", code: "050" },
+    { name: "Fidelity Bank", code: "070" },
+    { name: "First Bank", code: "011" },
+    { name: "Guaranty Trust Bank", code: "058" },
+    { name: "Kuda Microfinance Bank", code: "50211" },
+    { name: "Moniepoint MFB", code: "50515" },
+    { name: "Opay Digital Services Limited (OPay)", code: "999991" },
+    { name: "Palmpay", code: "999992" },
+    { name: "Stanbic IBTC Bank", code: "221" },
+    { name: "UBA", code: "033" },
+    { name: "Union Bank", code: "032" },
+    { name: "Zenith Bank", code: "057" },
+  ];
+
   const handleTicketChange = (index: number, field: string, value: string) => {
     const newTickets = [...tickets];
     newTickets[index][field as keyof (typeof newTickets)[0]] = value;
@@ -51,7 +71,6 @@ export default function EventManagerPage() {
       return;
     }
 
-    // FormData
     const formData = new FormData();
     formData.append("title", title);
     formData.append("location", location);
@@ -70,6 +89,10 @@ export default function EventManagerPage() {
       )
     );
 
+    // append bank info
+    formData.append("bankName", bankName);
+    formData.append("accountNumber", accountNumber);
+
     try {
       const res = await axios.post(`${BACKENDURL}/api/create-event`, formData, {
         headers: {
@@ -87,6 +110,8 @@ export default function EventManagerPage() {
       setDate("");
       setImage(null);
       setTickets([{ type: "", price: "", quantity: "", deadline: "" }]);
+      setBankName("");
+      setAccountNumber("");
       setIsModalOpen(false);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
@@ -107,9 +132,7 @@ export default function EventManagerPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-black">
-      {/* Page content */}
       <div className="px-2">
-        {/* Upcoming Events */}
         <section className="mb-10">
           <h2 className="text-xl font-semibold mb-4">Upcoming Events</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -140,7 +163,6 @@ export default function EventManagerPage() {
         </section>
       </div>
 
-      {/* Floating Create Button */}
       <button
         onClick={() => setIsModalOpen(true)}
         className="fixed bottom-6 right-6 bg-black text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-gray-800 transition text-3xl"
@@ -148,11 +170,9 @@ export default function EventManagerPage() {
         +
       </button>
 
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-white/30 backdrop-blur-md z-50">
           <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative overflow-y-auto max-h-[90vh]">
-            {/* Close Button */}
             <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-3 right-3 text-gray-500 hover:text-black"
@@ -285,6 +305,41 @@ export default function EventManagerPage() {
                 >
                   + Add Ticket
                 </button>
+              </div>
+
+              {/* Bank Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Bank Name
+                </label>
+                <select
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  className="w-full border border-gray-300 p-3 rounded-lg text-black focus:ring-2 focus:ring-black focus:outline-none"
+                  required
+                >
+                  <option value="">Select Bank</option>
+                  {banks.map((bank) => (
+                    <option key={bank.code} value={bank.name}>
+                      {bank.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Account Number */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Account Number
+                </label>
+                <input
+                  type="text"
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                  placeholder="Enter account number"
+                  className="w-full border border-gray-300 p-3 rounded-lg text-black focus:ring-2 focus:ring-black focus:outline-none"
+                  required
+                />
               </div>
 
               {/* Image Upload */}

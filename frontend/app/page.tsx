@@ -140,6 +140,7 @@ const EventCard = ({ event }: { event?: Event }) => {
       role="article"
     >
       <div className="relative rounded-xl overflow-hidden bg-white/3 border border-gray-700/50 backdrop-blur-xl transition-all duration-300 hover:scale-102 hover:border-pink-400/50 hover:shadow-[0_0_10px_rgba(255,0,128,0.3)] glow-effect group">
+        {/* Event Image */}
         <div className="relative">
           <Image
             src={event.image}
@@ -152,24 +153,31 @@ const EventCard = ({ event }: { event?: Event }) => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
         </div>
-        <div className="p-6 text-center bg-black/20 space-y-2.5">
-          <h3 className="text-white font-bold text-lg md:text-xl tracking-tight">
+
+        {/* Event Info */}
+        <div className="p-6 text-center bg-black/20 space-y-3 md:space-y-4">
+          <h3 className="text-white font-bold text-lg md:text-2xl tracking-tight">
             {event.title}
           </h3>
           <h4 className="text-cyan-300 font-bold text-sm md:text-base tracking-tight">
             {event.location}
           </h4>
-          <p className="text-gray-200 text-sm md:text-base max-h-12 overflow-hidden">
+
+          {/* Make details more prominent */}
+          <p className="text-gray-100 text-sm md:text-base max-h-36 overflow-y-auto break-words">
             {event.details}
           </p>
+
           <time
             dateTime={event.date}
             className="inline-flex text-purple-300 font-semibold text-sm md:text-base tracking-tight bg-purple-500/5 rounded px-2 py-1"
           >
             {formattedDate}
           </time>
-          <div className="flex justify-center gap-6 items-center">
-            <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-pink-400 to-cyan-400 text-white text-xs rounded-full font-semibold animate-pulse">
+
+          {/* Action Buttons */}
+          <div className="flex justify-center gap-4 items-center flex-wrap">
+            <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-pink-400 to-cyan-400 text-white text-xs md:text-sm rounded-full font-semibold animate-pulse">
               Party
             </span>
             <button className="px-4 py-2 bg-transparent border border-pink-400 text-pink-400 font-semibold rounded-lg hover:bg-pink-400/20 hover:text-white transition-all duration-300 glow-button">
@@ -177,6 +185,8 @@ const EventCard = ({ event }: { event?: Event }) => {
             </button>
           </div>
         </div>
+
+        {/* Hover effect */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,0,128,0.1),transparent)] opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
       </div>
     </Link>
@@ -279,22 +289,24 @@ export default function Home() {
 
       {/* Today's Party Section */}
       <section className="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-20 bg-gradient-to-b from-gray-900 to-black">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-8 bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-md">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center mb-8 bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-md">
           Today’s Party!
         </h2>
 
         {todaysEventList.length === 0 ? (
           <div className="text-center text-gray-400 py-12">
-            <p className="text-xl mb-4">No events scheduled for today.</p>
+            <p className="text-xl sm:text-2xl mb-4">
+              No events scheduled for today.
+            </p>
             <Link
               href="/events"
-              className="px-6 py-3 bg-pink-400 text-white rounded-lg hover:bg-pink-500 transition"
+              className="inline-block px-6 py-3 bg-pink-400 text-white rounded-lg hover:bg-pink-500 transition"
             >
               Browse Upcoming Events
             </Link>
           </div>
         ) : (
-          <div className="max-w-md mx-auto space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {todaysEventList.map((event) => (
               <EventCard key={event._id} event={event} />
             ))}
