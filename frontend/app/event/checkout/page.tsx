@@ -63,8 +63,13 @@ export default function CheckoutPage() {
         },
       });
     } catch (err: unknown) {
-      const error = err as AxiosError;
-      console.error(error.response?.data || error.message);
+      if (axios.isAxiosError(err)) {
+        console.error(err.response?.data || err.message);
+      } else if (err instanceof Error) {
+        console.error(err.message);
+      } else {
+        console.error("Unexpected error", err);
+      }
       alert("Payment initialization failed.");
     }
   };
