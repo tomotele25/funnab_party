@@ -69,12 +69,9 @@ export default function CheckoutPage() {
         payload
       );
       router.push(response.data.authorization_url);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Payment error:", err);
-      alert(
-        err.response?.data?.message ||
-          "Payment initiation failed. Please try again."
-      );
+      alert("Payment initiation failed. Please try again.");
     } finally {
       setIsProcessingPayment(false);
     }
