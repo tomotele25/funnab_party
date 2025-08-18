@@ -44,7 +44,9 @@ export default function CheckoutPage() {
 
       const { reference } = res.data;
 
+      const PaystackPop = (await import("@paystack/inline-js")).default;
       const paystack = new PaystackPop();
+
       paystack.newTransaction({
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
         email: form.email,
@@ -60,13 +62,11 @@ export default function CheckoutPage() {
         },
       });
     } catch (error: unknown) {
-      if (error instanceof Error) {
+      if (error instanceof Error)
         console.error("Payment error:", error.message);
-      }
       return null;
     }
   };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handlePaystackPayment();
