@@ -55,7 +55,7 @@ const getTodaysEvents = async (req, res) => {
   }
 };
 
-getEventBySlug = async (req, res) => {
+const getEventBySlug = async (req, res) => {
   const { slug } = req.params;
 
   try {
