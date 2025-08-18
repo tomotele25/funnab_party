@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -22,32 +22,26 @@ interface PaymentResponse {
 }
 
 interface CheckoutPageProps {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }
 
 export default function CheckoutPage({ params }: CheckoutPageProps) {
-  const { slug } = use(params);
+  const { slug } = params;
   const { cart, removeFromCart, clearCart, totalPrice } = useCart();
   const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "" });
   const [formErrors, setFormErrors] = useState({ name: "", email: "" });
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-  // Log cart for debugging
-  console.log("Cart contents for slug:", slug, cart);
-
-  // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  // Validate form
   const validateForm = () => {
     let isValid = true;
     const errors = { name: "", email: "" };
-
     if (!formData.name.trim()) {
       errors.name = "Name is required";
       isValid = false;
@@ -59,18 +53,17 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       errors.email = "Invalid email format";
       isValid = false;
     }
-
     setFormErrors(errors);
     return isValid;
   };
 
-  // Handle checkout with payment redirect
   const handleCheckout = async () => {
     if (!validateForm()) return;
     setIsProcessingPayment(true);
+
     try {
       const response = await axios.post<PaymentResponse>(
-        "https://funnabparty-backend.vercel.app/payment/initialize",
+        "http://localhost:2005/payment/initialize",
         {
           email: formData.email,
           amount: totalPrice * 100,
@@ -109,7 +102,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col">
-      {/* Header with Back Button */}
+      {/* Header */}
       <div className="flex items-center gap-3 p-4 sm:p-6 border-b border-gray-800 bg-white/5 backdrop-blur-xl">
         <button
           onClick={() => router.push(`/event/${slug}`)}
@@ -123,7 +116,6 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         </h1>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 p-4 sm:p-6 space-y-6 max-w-3xl mx-auto w-full">
         {/* Cart Items */}
         <div className="space-y-4">
@@ -139,13 +131,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
               >
                 <div className="mb-2 sm:mb-0">
                   <p className="font-semibold text-base sm:text-lg text-white">
-                    {item.name || "Unknown Ticket"}
+                    {item.name}
                   </p>
                   <p className="text-gray-400 text-sm">
-                    {item.quantity} × ₦{(item.price || 0).toLocaleString()}
+                    {item.quantity} × ₦{item.price.toLocaleString()}
                   </p>
                   <p className="text-gray-400 text-sm">
-                    Organizer: {item.organizer || "Unknown"}
+                    Organizer: {item.organizer}
                   </p>
                   {item.image && (
                     <Image
@@ -221,7 +213,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         {/* Payment Logo */}
         <div className="flex justify-center mt-4">
           <Image
-            src="/payment-logo.png" // Replace with actual payment logo path
+            src="/payment-logo.png"
             alt="Payment Provider Logo"
             width={100}
             height={40}
