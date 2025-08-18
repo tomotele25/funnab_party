@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import axios from "axios";
@@ -36,14 +36,14 @@ interface Event {
   organizer: string;
 }
 
-interface EventPageProps {
-  params: { slug: string };
-}
-
 const BACKENDURL = "https://funnabparty-backend.vercel.app";
 
+interface EventPageProps {
+  params: Promise<{ slug: string }>;
+}
+
 const EventPage = ({ params }: EventPageProps) => {
-  const { slug } = params;
+  const { slug } = use(params);
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
