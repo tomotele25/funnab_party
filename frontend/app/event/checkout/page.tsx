@@ -1,32 +1,15 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, ShoppingCart, User, Mail } from "lucide-react";
 import axios from "axios";
+const BACKENDURL = "https://funnabparty-backend.vercel.app";
 
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image?: string;
-  eventId: string;
-  organizer: string;
-}
-
-interface PaymentResponse {
-  authorization_url: string;
-}
-
-interface CheckoutPageProps {
-  params: Promise<{ slug: string }>;
-}
-export default function CheckoutPage({ params }: CheckoutPageProps) {
-  const { slug } = use(params);
-  const { cart, removeFromCart, clearCart, totalPrice } = useCart();
+export default function CheckoutPage() {
+  const { cart, removeFromCart, totalPrice } = useCart();
   const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "" });
   const [formErrors, setFormErrors] = useState({ name: "", email: "" });
@@ -58,23 +41,40 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
 
   const handleCheckout = async () => {
     if (!validateForm()) return;
-    setIsProcessingPayment(true);
 
+    if (cart.length === 0) {
+      alert("Cart is empty");
+      return;
+    }
+
+    const payload = {
+      email: formData.email,
+      amount: totalPrice,
+      items: cart.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        eventId: item.eventId,
+        organizer: item.organizer,
+      })),
+    };
+
+    console.log("Payment payload:", payload);
+
+    setIsProcessingPayment(true);
     try {
-      const response = await axios.post<PaymentResponse>(
-        "https://funnabparty-backend.vercel.app/api/payment/initialize",
-        {
-          email: formData.email,
-          amount: totalPrice * 100,
-          cart,
-          eventSlug: slug,
-        }
+      const response = await axios.post(
+        `${BACKENDURL}/api/payment/initialize`,
+        payload
       );
-      const { authorization_url } = response.data;
-      router.push(authorization_url);
-    } catch (err) {
+      router.push(response.data.authorization_url);
+    } catch (err: any) {
       console.error("Payment error:", err);
-      alert("Payment initiation failed. Please try again.");
+      alert(
+        err.response?.data?.message ||
+          "Payment initiation failed. Please try again."
+      );
     } finally {
       setIsProcessingPayment(false);
     }
@@ -89,10 +89,10 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
             Your cart is empty.
           </p>
           <button
-            onClick={() => router.push(`/event/${slug}`)}
+            onClick={() => router.push("/events")}
             className="mt-6 px-6 py-3 bg-gradient-to-r from-pink-400 to-cyan-400 text-white font-semibold rounded-lg hover:bg-gradient-to-r hover:from-cyan-400 hover:to-pink-400 transition-all duration-300 hover:scale-105 glow-button"
           >
-            Back to Event
+            Back to Events
           </button>
         </div>
       </div>
@@ -104,7 +104,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
       {/* Header */}
       <div className="flex items-center gap-3 p-4 sm:p-6 border-b border-gray-800 bg-white/5 backdrop-blur-xl">
         <button
-          onClick={() => router.push(`/event/${slug}`)}
+          onClick={() => router.push("/events")}
           className="flex items-center gap-2 text-pink-400 hover:text-pink-300 transition-all duration-300"
         >
           <ArrowLeft className="w-5 h-5" />

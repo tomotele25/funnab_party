@@ -1,59 +1,36 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
 
-interface CartItem {
+// --- Types ---
+export interface CartItem {
   id: string;
   name: string;
   price: number;
   quantity: number;
   image?: string;
-  eventId: string;
-  organizer: string;
+  eventId?: string; // optional, but can be used
+  organizer?: string; // optional, but can be used
 }
 
 interface CartContextType {
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   totalPrice: number;
 }
 
+// --- Context ---
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+// --- Provider ---
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  useEffect(() => {
-    const storedCart = localStorage.getItem("cart");
-    if (storedCart) {
-      try {
-        const parsedCart = JSON.parse(storedCart);
-        if (Array.isArray(parsedCart)) {
-          setCart(parsedCart);
-        }
-      } catch (err) {
-        console.error("Failed to parse cart from localStorage:", err);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
-
+  // Add item or increment quantity if already exists
   const addToCart = (item: CartItem) => {
-    if (!item.id || !item.price || item.quantity < 1) {
-      console.warn("Invalid cart item:", item);
-      return;
-    }
     setCart((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
@@ -65,30 +42,49 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  // Remove item
   const removeFromCart = (id: string) => {
-    setCart((prev) => prev.filter((i) => i.id !== id));
+    setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const clearCart = () => {
-    setCart([]);
+  // Update quantity
+  const updateQuantity = (id: string, quantity: number) => {
+    if (quantity <= 0) return removeFromCart(id);
+    setCart((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+    );
   };
 
+  // Clear cart
+  const clearCart = () => setCart([]);
+
+  // Calculate total price
   const totalPrice = cart.reduce(
-    (total, item) => total + (item.price || 0) * (item.quantity || 0),
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, clearCart, totalPrice }}
+      value={{
+        cart,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        totalPrice,
+      }}
     >
       {children}
     </CartContext.Provider>
   );
 };
 
-export const useCart = () => {
+// --- Hook to use cart ---
+export const useCart = (): CartContextType => {
   const context = useContext(CartContext);
-  if (!context) throw new Error("useCart must be used within CartProvider");
+  if (!context) {
+    throw new Error("useCart must be used within a CartProvider");
+  }
   return context;
 };
