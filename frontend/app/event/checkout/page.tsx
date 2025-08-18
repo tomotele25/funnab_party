@@ -1,21 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCart } from "lucide-react";
 import PaystackPop from "@paystack/inline-js";
 import axios from "axios";
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image?: string;
-  eventId: string;
-  organizer: string;
-}
 
 interface PaystackTransaction {
   reference: string;
@@ -26,7 +15,7 @@ interface PaystackTransaction {
   channel?: string;
   currency?: string;
   amount?: number;
-  [key: string]: any;
+  [key: string]: unknown; // replaces `any`
 }
 
 const BACKENDURL = "https://funnabparty-backend.vercel.app";
@@ -43,19 +32,21 @@ export default function CheckoutPage() {
     if (cart.length === 0) return alert("Your cart is empty.");
 
     try {
-      const eventId = cart[0].eventId;
-      const organizer = cart[0].organizer;
+      const eventId = cart[0]?.eventId;
+      const organizer = cart[0]?.organizer;
 
-      const res = await axios.post<{ reference: string }>(
-        `${BACKENDURL}/api/payment/initialize`,
-        { email: form.email, amount: totalPrice, eventId, organizer }
-      );
+      const res = await axios.post(`${BACKENDURL}/api/payment/initialize`, {
+        email: form.email,
+        amount: totalPrice,
+        eventId,
+        organizer,
+      });
 
       const { reference } = res.data;
 
       const paystack = new PaystackPop();
       paystack.newTransaction({
-        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ?? "",
+        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
         email: form.email,
         amount: totalPrice * 100,
         reference,
@@ -71,8 +62,6 @@ export default function CheckoutPage() {
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error("Payment error:", error.message);
-      } else {
-        console.error("Unexpected error:", error);
       }
       return null;
     }
@@ -145,12 +134,10 @@ export default function CheckoutPage() {
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-4">
                         {item.image && (
-                          <Image
+                          <img
                             src={item.image}
                             alt={item.name}
-                            width={80}
-                            height={80}
-                            className="rounded-xl border border-gray-700 object-cover"
+                            className="w-20 h-20 rounded-xl object-cover border border-gray-700"
                           />
                         )}
                         <div>
