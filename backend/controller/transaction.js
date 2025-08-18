@@ -1,6 +1,7 @@
 const axios = require("axios");
 const Transaction = require("../models/transaction");
 
+// Initialize Paystack payment
 const initializePayment = async (req, res) => {
   try {
     const { eventId, organizer, email, amount } = req.body;
@@ -9,6 +10,7 @@ const initializePayment = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields." });
     }
 
+    // Create transaction in DB
     const transaction = await Transaction.create({
       eventId,
       organizer,
@@ -16,13 +18,14 @@ const initializePayment = async (req, res) => {
       paystackRefrence: `TRX-${Date.now()}`,
     });
 
+    // Initialize Paystack transaction
     const paystackRes = await axios.post(
       "https://api.paystack.co/transaction/initialize",
       {
         email,
-        amount: amount * 100,
+        amount: amount * 100, // Paystack expects kobo
         reference: transaction.paystackRefrence,
-        callback_url: "https://funnabparty.vercel.app/event/payment",
+        callback_url: "https://funnabparty.vercel.app/event/payment", // Update to your live URL
       },
       {
         headers: {
@@ -42,6 +45,7 @@ const initializePayment = async (req, res) => {
   }
 };
 
+// Verify Paystack payment
 const verifyPayment = async (req, res) => {
   try {
     const { reference } = req.query;
@@ -61,6 +65,7 @@ const verifyPayment = async (req, res) => {
 
     const { status, amount, customer } = paystackRes.data.data;
 
+    // Update transaction status in DB
     const transaction = await Transaction.findOneAndUpdate(
       { paystackRefrence: reference },
       { status: status === "success" ? "success" : "failed" },
