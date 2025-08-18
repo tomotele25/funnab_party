@@ -62,8 +62,8 @@ export default function CheckoutPage() {
           alert("Payment cancelled.");
         },
       });
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
+    } catch (err) {
+      if (err instanceof axios.AxiosError) {
         console.error(err.response?.data || err.message);
       } else if (err instanceof Error) {
         console.error(err.message);
