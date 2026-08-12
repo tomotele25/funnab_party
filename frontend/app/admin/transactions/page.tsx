@@ -70,26 +70,31 @@ export default function AdminTransactionsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-black mb-1">Transactions</h1>
-      <p className="text-gray-500 text-sm mb-6">
+      <h1
+        className="text-2xl font-bold text-[var(--color-text)] mb-1"
+        style={{ fontFamily: "var(--font-space-grotesk)" }}
+      >
+        Transactions
+      </h1>
+      <p className="text-[var(--color-text-muted)] text-sm mb-6">
         All ticket purchases processed on the platform.
       </p>
 
       {loading ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
+        <div className="card-surface p-4 space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-14 bg-gray-50 rounded-lg animate-pulse" />
+            <div key={i} className="h-14 bg-[var(--color-surface-2)] rounded-lg animate-pulse" />
           ))}
         </div>
       ) : transactions.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
-          <Receipt className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-          <p className="text-gray-500">No transactions yet.</p>
+        <div className="card-surface p-10 text-center">
+          <Receipt className="w-10 h-10 mx-auto mb-3 text-[var(--color-text-muted)]" />
+          <p className="text-[var(--color-text-muted)]">No transactions yet.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+        <div className="card-surface overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+            <thead className="bg-[var(--color-surface-2)] text-[var(--color-text-muted)] text-xs uppercase tracking-wide">
               <tr>
                 <th className="p-4">Reference</th>
                 <th className="p-4">Buyer</th>
@@ -104,41 +109,41 @@ export default function AdminTransactionsPage() {
               {transactions.map((tx) => (
                 <tr
                   key={tx._id}
-                  className="border-t border-gray-100 hover:bg-gray-50/60 transition"
+                  className="border-t border-[var(--color-border)] hover:bg-[var(--color-surface-2)]/60 transition"
                 >
-                  <td className="p-4 text-gray-600 font-mono text-xs">
+                  <td className="p-4 text-[var(--color-text-muted)] font-mono text-xs">
                     {tx.paystackReference}
                   </td>
-                  <td className="p-4 text-gray-600">
-                    <p className="text-black font-medium">{tx.userName}</p>
-                    <span className="text-xs text-gray-400">
+                  <td className="p-4 text-[var(--color-text-muted)]">
+                    <p className="text-[var(--color-text)] font-medium">{tx.userName}</p>
+                    <span className="text-xs text-[var(--color-text-muted)]">
                       {tx.userEmail}
                     </span>
                   </td>
-                  <td className="p-4 text-black font-semibold">
+                  <td className="p-4 text-[var(--color-text)] font-semibold">
                     ₦{tx.amount.toLocaleString()}
                   </td>
-                  <td className="p-4 text-gray-600">
+                  <td className="p-4 text-[var(--color-text-muted)]">
                     {tx.splitDetails?.platformFee
                       ? `₦${tx.splitDetails.platformFee.toLocaleString()}`
                       : "—"}
                   </td>
                   <td className="p-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      className={`px-2 py-1 rounded-[var(--radius-pill)] text-xs font-medium ${
                         tx.status === "success"
-                          ? "bg-green-100 text-green-700"
+                          ? "bg-[var(--color-success)]/15 text-[var(--color-success)]"
                           : tx.status === "failed"
-                          ? "bg-red-100 text-red-700"
+                          ? "bg-[var(--color-error)]/15 text-[var(--color-error)]"
                           : tx.status === "refunded"
-                          ? "bg-purple-100 text-purple-700"
-                          : "bg-yellow-100 text-yellow-700"
+                          ? "bg-[var(--color-primary)]/15 text-[var(--color-primary)]"
+                          : "bg-[var(--color-warning)]/15 text-[var(--color-warning)]"
                       }`}
                     >
                       {tx.status}
                     </span>
                   </td>
-                  <td className="p-4 text-gray-600">
+                  <td className="p-4 text-[var(--color-text-muted)]">
                     {new Date(tx.createdAt).toLocaleDateString()}
                   </td>
                   <td className="p-4">
@@ -146,7 +151,7 @@ export default function AdminTransactionsPage() {
                       <button
                         onClick={() => handleRefund(tx)}
                         disabled={refundingId === tx._id}
-                        className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                        className="text-xs text-[var(--color-error)] hover:underline disabled:opacity-50"
                       >
                         {refundingId === tx._id ? "Refunding..." : "Refund"}
                       </button>

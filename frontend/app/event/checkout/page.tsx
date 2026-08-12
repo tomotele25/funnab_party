@@ -12,6 +12,7 @@ import {
   Minus,
   Plus,
   Trash2,
+  ShieldCheck,
 } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -72,8 +73,6 @@ export default function CheckoutPage() {
       })),
     };
 
-    console.log("Payment payload:", payload);
-
     setIsProcessingPayment(true);
     try {
       const response = await axios.post(
@@ -91,15 +90,15 @@ export default function CheckoutPage() {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 sm:px-6">
-        <div className="bg-white/5 backdrop-blur-xl rounded-xl p-6 border border-gray-700/50 text-center">
-          <p className="text-lg font-medium flex items-center justify-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-pink-400" />
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--color-bg)] px-4 text-[var(--color-text)] sm:px-6">
+        <div className="card-surface p-6 text-center">
+          <p className="flex items-center justify-center gap-2 text-lg font-medium">
+            <ShoppingCart className="h-5 w-5 text-[var(--color-accent)]" />
             Your cart is empty.
           </p>
           <button
             onClick={() => router.push("/")}
-            className="mt-6 px-6 py-3 bg-gradient-to-r from-pink-400 to-cyan-400 text-white font-semibold rounded-lg hover:bg-gradient-to-r hover:from-cyan-400 hover:to-pink-400 transition-all duration-300 hover:scale-105 glow-button"
+            className="btn-aurora mt-6 px-6 py-3 font-semibold"
           >
             Back to Events
           </button>
@@ -109,102 +108,86 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans flex flex-col">
+    <div className="flex min-h-screen flex-col bg-[var(--color-bg)] font-sans text-[var(--color-text)]">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 sm:p-6 border-b border-gray-800 bg-white/5 backdrop-blur-xl">
+      <div className="flex items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface)]/60 p-4 backdrop-blur-xl sm:p-6">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-pink-400 hover:text-pink-300 transition-all duration-300"
+          className="flex items-center gap-2 text-[var(--color-accent)] transition-colors duration-300 hover:text-[var(--color-primary)]"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="h-5 w-5" />
           <span className="font-medium">Back</span>
         </button>
-        <h1 className="text-xl sm:text-2xl font-bold flex-1 text-center bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent">
-          Checkout
+        <h1
+          className="flex-1 text-center text-xl font-bold sm:text-2xl"
+          style={{ fontFamily: "var(--font-space-grotesk)" }}
+        >
+          <span className="gradient-text-aurora">Checkout</span>
         </h1>
       </div>
 
-      <div className="flex-1 p-4 sm:p-6 space-y-6 max-w-3xl mx-auto w-full">
+      <div className="mx-auto w-full max-w-3xl flex-1 space-y-6 p-4 sm:p-6">
         {/* Cart Items */}
-        <div className="space-y-6 ml-4 mr-4">
-          <h2 className="text-xl sm:text-2xl font-semibold text-white flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-pink-400" />
+        <div className="space-y-4">
+          <h2 className="flex items-center gap-2 text-xl font-semibold sm:text-2xl">
+            <ShoppingCart className="h-5 w-5 text-[var(--color-accent)]" />
             Your Tickets
           </h2>
-          <ul className="space-y-6">
+          <ul className="space-y-4">
             {cart.map((item, index) => (
-              <li
-                key={`${item.id}-${index}`}
-                className="relative bg-white/10 backdrop-blur-lg rounded-xl p-5 border border-gray-600/50 hover:border-pink-400/50 transition-all duration-300 ticket-item shadow-lg"
-                style={{
-                  clipPath:
-                    "polygon(5% 0%, 95% 0%, 100% 10%, 100% 90%, 95% 100%, 5% 100%, 0% 90%, 0% 10%)",
-                }}
-              >
-                {/* Perforated Edge Effect */}
-                <div className="absolute left-[-8px] top-1/2 transform -translate-y-1/2 w-4 h-4 bg-black rounded-full border border-gray-600/50"></div>
-                <div className="absolute right-[-8px] top-1/2 transform -translate-y-1/2 w-4 h-4 bg-black rounded-full border border-gray-600/50"></div>
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-gray-700/50 border-r border-dashed border-gray-500"></div>
-                <div className="absolute right-0 top-0 bottom-0 w-1 bg-gray-700/50 border-l border-dashed border-gray-500"></div>
-
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-400/10 to-cyan-400/10 opacity-50 rounded-xl"></div>
-
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10">
+              <li key={`${item.id}-${index}`} className="card-surface p-4 sm:p-5">
+                <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                   <div className="flex items-center gap-4">
                     {item.image && (
                       <Image
                         src={item.image}
                         alt={item.name}
-                        width={70}
-                        height={70}
-                        className="object-cover rounded-lg border border-pink-400/30 shadow-sm"
+                        width={64}
+                        height={64}
+                        className="rounded-[var(--radius-btn)] border border-[var(--color-border)] object-cover"
                       />
                     )}
                     <div>
-                      <p className="font-semibold text-base sm:text-lg text-white bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                      <p className="text-base font-semibold sm:text-lg">
                         {item.name}
                       </p>
-                      <p className="text-gray-300 text-sm">
+                      <p className="text-sm text-[var(--color-text-muted)]">
                         ₦{item.price.toLocaleString()} each
-                      </p>
-                      <p className="text-xs text-cyan-400 mt-1 italic">
-                        Ticket #{(index + 1).toString().padStart(4, "0")}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 mt-4 sm:mt-0 w-full sm:w-auto justify-between sm:justify-end">
-                    <div className="flex items-center border border-gray-600/50 rounded-lg overflow-hidden">
+                  <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
+                    <div className="flex items-center overflow-hidden rounded-[var(--radius-btn)] border border-[var(--color-border)]">
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         aria-label="Decrease quantity"
-                        className="px-2.5 py-1.5 bg-gray-800 hover:bg-gray-700 text-white transition"
+                        className="bg-[var(--color-surface-2)] px-2.5 py-1.5 transition hover:bg-white/10"
                       >
-                        <Minus className="w-3.5 h-3.5" />
+                        <Minus className="h-3.5 w-3.5" />
                       </button>
-                      <span className="px-3 py-1.5 text-sm text-white min-w-[2rem] text-center">
+                      <span className="min-w-[2rem] px-3 py-1.5 text-center text-sm">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         aria-label="Increase quantity"
-                        className="px-2.5 py-1.5 bg-gray-800 hover:bg-gray-700 text-white transition"
+                        className="bg-[var(--color-surface-2)] px-2.5 py-1.5 transition hover:bg-white/10"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="h-3.5 w-3.5" />
                       </button>
                     </div>
 
-                    <span className="font-semibold text-pink-400 text-sm min-w-[4.5rem] text-right">
+                    <span className="min-w-[4.5rem] text-right text-sm font-semibold text-[var(--color-accent)]">
                       ₦{(item.price * item.quantity).toLocaleString()}
                     </span>
 
                     <button
                       onClick={() => removeFromCart(item.id)}
                       aria-label="Remove ticket"
-                      className="p-2 bg-red-600/80 hover:bg-red-500 rounded-lg text-white transition-all duration-300 shadow-md hover:shadow-lg"
+                      className="rounded-[var(--radius-btn)] bg-[var(--color-error)]/80 p-2 text-white transition-colors duration-300 hover:bg-[var(--color-error)]"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
@@ -214,15 +197,15 @@ export default function CheckoutPage() {
         </div>
 
         {/* Form */}
-        <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 sm:p-6 border border-gray-700/50">
-          <h2 className="text-xl sm:text-2xl font-semibold text-white flex items-center gap-2 mb-4">
-            <User className="w-5 h-5 text-cyan-400" />
+        <div className="card-surface p-4 sm:p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold sm:text-2xl">
+            <User className="h-5 w-5 text-[var(--color-secondary)]" />
             Your Details
           </h2>
           <form className="space-y-4">
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-200">
-                <User className="w-4 h-4 text-pink-400" />
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-muted)]">
+                <User className="h-4 w-4 text-[var(--color-accent)]" />
                 Name
               </label>
               <input
@@ -230,16 +213,18 @@ export default function CheckoutPage() {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full mt-1 px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white focus:border-pink-400 focus:ring-2 focus:ring-pink-400/50 outline-none transition-all duration-300"
+                className="mt-1 w-full rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2 text-[var(--color-text)] outline-none transition-all duration-300 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/40"
                 placeholder="Enter your name"
               />
               {formErrors.name && (
-                <p className="mt-1 text-sm text-red-400">{formErrors.name}</p>
+                <p className="mt-1 text-sm text-[var(--color-error)]">
+                  {formErrors.name}
+                </p>
               )}
             </div>
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-200">
-                <Mail className="w-4 h-4 text-cyan-400" />
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-muted)]">
+                <Mail className="h-4 w-4 text-[var(--color-secondary)]" />
                 Email
               </label>
               <input
@@ -247,57 +232,46 @@ export default function CheckoutPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className="w-full mt-1 px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/50 outline-none transition-all duration-300"
+                className="mt-1 w-full rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2 text-[var(--color-text)] outline-none transition-all duration-300 focus:border-[var(--color-secondary)] focus:ring-2 focus:ring-[var(--color-secondary)]/40"
                 placeholder="Enter your email"
               />
               {formErrors.email && (
-                <p className="mt-1 text-sm text-red-400">{formErrors.email}</p>
+                <p className="mt-1 text-sm text-[var(--color-error)]">
+                  {formErrors.email}
+                </p>
               )}
             </div>
           </form>
         </div>
 
+        {/* Trust signal */}
+        <div className="flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
+          <ShieldCheck className="h-4 w-4 text-[var(--color-success)]" />
+          Payments are secured and processed by Paystack.
+        </div>
+
         {/* Total */}
-        <div className="text-lg sm:text-xl font-semibold flex justify-between items-center">
-          <span className="text-white">Total</span>
-          <span className="text-pink-400">₦{totalPrice.toLocaleString()}</span>
+        <div className="flex items-center justify-between text-lg font-semibold sm:text-xl">
+          <span>Total</span>
+          <span className="text-[var(--color-accent)]">
+            ₦{totalPrice.toLocaleString()}
+          </span>
         </div>
       </div>
 
       {/* Sticky Footer */}
-      <div className="p-4 sm:p-6 border-t border-gray-800 bg-black/95 backdrop-blur-xl sticky bottom-0 max-w-3xl mx-auto w-full">
+      <div className="sticky bottom-0 mx-auto w-full max-w-3xl border-t border-[var(--color-border)] bg-[var(--color-bg)]/95 p-4 backdrop-blur-xl sm:p-6">
         <button
           onClick={handleCheckout}
           disabled={isProcessingPayment}
-          className={`w-full px-4 py-3 bg-gradient-to-r from-pink-400 to-cyan-400 text-white font-bold rounded-lg hover:bg-gradient-to-r hover:from-cyan-400 hover:to-pink-400 transition-all duration-300 hover:scale-105 glow-button flex items-center justify-center ${
-            isProcessingPayment ? "opacity-50 cursor-not-allowed" : ""
+          className={`btn-aurora flex w-full items-center justify-center px-4 py-3 font-bold ${
+            isProcessingPayment ? "cursor-not-allowed opacity-50" : ""
           }`}
         >
-          <ShoppingCart className="w-5 h-5 mr-2" />
+          <ShoppingCart className="mr-2 h-5 w-5" />
           {isProcessingPayment ? <Loader /> : "Pay Now"}
         </button>
       </div>
-
-      <style jsx>{`
-        .ticket-item {
-          box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
-          background: linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.1),
-            rgba(255, 255, 255, 0.05)
-          );
-        }
-        .ticket-item:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 25px rgba(255, 105, 180, 0.4);
-        }
-        .glow-button {
-          box-shadow: 0 0 10px rgba(255, 105, 180, 0.3);
-        }
-        .glow-button:hover:not(:disabled) {
-          box-shadow: 0 0 15px rgba(255, 105, 180, 0.5);
-        }
-      `}</style>
     </div>
   );
 }

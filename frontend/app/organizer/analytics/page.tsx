@@ -41,21 +41,26 @@ export default function OrganizerAnalyticsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-black mb-1">Analytics</h1>
-      <p className="text-gray-500 text-sm mb-6">
+      <h1
+        className="text-2xl font-bold text-[var(--color-text)] mb-1"
+        style={{ fontFamily: "var(--font-space-grotesk)" }}
+      >
+        Analytics
+      </h1>
+      <p className="text-[var(--color-text-muted)] text-sm mb-6">
         Ticket sales performance across your events.
       </p>
 
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 h-32 animate-pulse" />
+            <div key={i} className="card-surface h-32 animate-pulse" />
           ))}
         </div>
       ) : events.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
-          <BarChart3 className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-          <p className="text-gray-500">
+        <div className="card-surface p-10 text-center">
+          <BarChart3 className="w-10 h-10 mx-auto mb-3 text-[var(--color-text-muted)]" />
+          <p className="text-[var(--color-text-muted)]">
             No events yet — create one to start tracking sales.
           </p>
         </div>
@@ -70,26 +75,26 @@ export default function OrganizerAnalyticsPage() {
             return (
               <div
                 key={ev._id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5"
+                className="card-surface p-5"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="font-semibold text-black">{ev.title}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="font-semibold text-[var(--color-text)]">{ev.title}</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">
                       {new Date(ev.date).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-black">
+                    <p className="text-lg font-bold text-[var(--color-text)]">
                       ₦{revenue.toLocaleString()}
                     </p>
-                    <p className="text-xs text-gray-500">revenue</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">revenue</p>
                   </div>
                 </div>
 
-                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-4">
+                <div className="w-full h-2 bg-[var(--color-surface-2)] rounded-full overflow-hidden mb-4">
                   <div
-                    className="h-full bg-gradient-to-r from-pink-400 to-cyan-400"
+                    className="h-full gradient-aurora"
                     style={{ width: `${Math.min(pct, 100)}%` }}
                   />
                 </div>
@@ -98,10 +103,10 @@ export default function OrganizerAnalyticsPage() {
                   {ev.tickets.map((t) => (
                     <div
                       key={t.type}
-                      className="bg-gray-50 rounded-lg p-3 border border-gray-100"
+                      className="bg-[var(--color-surface-2)] rounded-lg p-3 border border-[var(--color-border)]"
                     >
-                      <p className="text-xs text-gray-500">{t.type}</p>
-                      <p className="text-sm font-semibold text-black">
+                      <p className="text-xs text-[var(--color-text-muted)]">{t.type}</p>
+                      <p className="text-sm font-semibold text-[var(--color-text)]">
                         {t.sold}/{t.quantity}
                       </p>
                     </div>

@@ -58,84 +58,84 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
+    <div className="grid min-h-screen grid-cols-1 bg-[var(--color-bg)] md:grid-cols-2">
       <AuthBrandPanel />
 
-      <div className="flex justify-center items-center bg-gray-50 p-6">
-      <div className="w-full max-w-sm bg-white text-black shadow-lg rounded-xl p-8">
-        <h1 className="text-2xl font-semibold text-center mb-6">Sign In</h1>
+      <div className="flex items-center justify-center p-6">
+        <div className="card-surface w-full max-w-sm p-8 text-[var(--color-text)]">
+          <h1 className="mb-6 text-center text-2xl font-semibold">Sign In</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-[var(--color-text-muted)]"
+              >
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="mt-1 block w-full rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-[var(--color-text-muted)]"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="mt-1 block w-full rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="btn-aurora w-full py-2 font-medium"
             >
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:ring-1 focus:ring-black"
-              required
-            />
+              {loading ? <Loader /> : "Sign In"}
+            </button>
+          </form>
+
+          <div className="mt-6">
+            <button
+              type="button"
+              className="flex w-full items-center justify-center gap-3 rounded-[var(--radius-btn)] border border-[var(--color-border)] py-2 transition hover:bg-white/5"
+              onClick={() => console.log("Google sign in")}
+            >
+              <img
+                src="https://www.svgrepo.com/show/355037/google.svg"
+                alt="Google"
+                className="h-5 w-5"
+              />
+              <span className="text-sm font-medium text-[var(--color-text)]">
+                Continue with Google
+              </span>
+            </button>
           </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+          <p className="mt-6 text-center text-xs text-[var(--color-text-muted)]">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/signup"
+              className="font-medium text-[var(--color-accent)] hover:underline"
             >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:ring-1 focus:ring-black"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-black text-white py-2 rounded-lg font-medium hover:bg-gray-900 transition"
-          >
-            {loading ? <Loader /> : "Sign In"}
-          </button>
-        </form>
-
-        <div className="mt-6">
-          <button
-            type="button"
-            className="w-full flex items-center justify-center gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-50 transition"
-            onClick={() => console.log("Google sign in")}
-          >
-            <img
-              src="https://www.svgrepo.com/show/355037/google.svg"
-              alt="Google"
-              className="w-5 h-5"
-            />
-            <span className="text-sm font-medium text-gray-700">
-              Continue with Google
-            </span>
-          </button>
+              Sign up
+            </Link>
+          </p>
         </div>
-
-        <p className="text-xs text-gray-500 text-center mt-6">
-          Don’t have an account?{" "}
-          <Link
-            href="/signup"
-            className="text-black font-medium hover:underline"
-          >
-            Sign up
-          </Link>
-        </p>
-      </div>
       </div>
     </div>
   );

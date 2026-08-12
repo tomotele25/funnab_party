@@ -47,14 +47,14 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
+    <div className="grid min-h-screen grid-cols-1 bg-[var(--color-bg)] md:grid-cols-2">
       {/* LEFT BRAND PANEL */}
       <AuthBrandPanel />
 
       {/* RIGHT FORM */}
-      <div className="flex justify-center items-center bg-gray-50 p-8 h-full">
-        <div className="w-full max-w-md bg-white text-black shadow-lg rounded-xl p-8">
-          <h1 className="text-2xl font-semibold text-center mb-6">
+      <div className="flex h-full items-center justify-center p-6 sm:p-8">
+        <div className="card-surface w-full max-w-md p-8 text-[var(--color-text)]">
+          <h1 className="mb-6 text-center text-2xl font-semibold">
             Create Your Account
           </h1>
 
@@ -62,7 +62,7 @@ export default function Signup() {
             <div>
               <label
                 htmlFor="fullName"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-[var(--color-text-muted)]"
               >
                 Full Name
               </label>
@@ -72,7 +72,7 @@ export default function Signup() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="John Doe"
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:ring-1 focus:ring-black"
+                className="mt-1 block w-full rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
                 required
               />
             </div>
@@ -80,7 +80,7 @@ export default function Signup() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-[var(--color-text-muted)]"
               >
                 Email Address
               </label>
@@ -90,7 +90,7 @@ export default function Signup() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:ring-1 focus:ring-black"
+                className="mt-1 block w-full rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
                 required
               />
             </div>
@@ -98,7 +98,7 @@ export default function Signup() {
             <div>
               <label
                 htmlFor="phoneNumber"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-[var(--color-text-muted)]"
               >
                 Phone Number
               </label>
@@ -108,7 +108,7 @@ export default function Signup() {
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 placeholder="937-678-987"
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:ring-1 focus:ring-black"
+                className="mt-1 block w-full rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
                 required
               />
             </div>
@@ -116,7 +116,7 @@ export default function Signup() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium text-[var(--color-text-muted)]"
               >
                 Password
               </label>
@@ -126,14 +126,14 @@ export default function Signup() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:ring-1 focus:ring-black"
+                className="mt-1 block w-full rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
                 required
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-black text-white py-2 rounded-lg font-medium hover:bg-gray-900 transition"
+              className="btn-aurora w-full py-2 font-medium"
             >
               {loading ? <Loader /> : "Sign Up"}
             </button>
@@ -142,25 +142,25 @@ export default function Signup() {
           <div className="mt-6">
             <button
               type="button"
-              className="w-full flex items-center justify-center gap-3 border border-gray-300 py-2 rounded-lg hover:bg-gray-50 transition"
+              className="flex w-full items-center justify-center gap-3 rounded-[var(--radius-btn)] border border-[var(--color-border)] py-2 transition hover:bg-white/5"
               onClick={() => console.log("Google sign up")}
             >
               <img
                 src="https://www.svgrepo.com/show/355037/google.svg"
                 alt="Google"
-                className="w-5 h-5"
+                className="h-5 w-5"
               />
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-[var(--color-text)]">
                 Continue with Google
               </span>
             </button>
           </div>
 
-          <p className="text-xs text-gray-500 text-center mt-6">
+          <p className="mt-6 text-center text-xs text-[var(--color-text-muted)]">
             Already have an account?{" "}
             <Link
               href="/login"
-              className="text-black font-medium hover:underline"
+              className="font-medium text-[var(--color-accent)] hover:underline"
             >
               Log in
             </Link>

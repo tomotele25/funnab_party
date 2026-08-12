@@ -25,9 +25,9 @@ interface TicketRow {
 }
 
 const statusStyles: Record<TicketRow["status"], string> = {
-  valid: "bg-green-500/20 text-green-400",
-  used: "bg-gray-500/20 text-gray-400",
-  cancelled: "bg-red-500/20 text-red-400",
+  valid: "bg-[var(--color-success)]/20 text-[var(--color-success)]",
+  used: "bg-white/10 text-[var(--color-text-muted)]",
+  cancelled: "bg-[var(--color-error)]/20 text-[var(--color-error)]",
 };
 
 export default function MyTicketsPage() {
@@ -72,41 +72,43 @@ export default function MyTicketsPage() {
   };
 
   return (
-    <div className="bg-black text-white min-h-screen font-sans flex flex-col">
+    <div className="flex min-h-screen flex-col bg-[var(--color-bg)] font-sans text-[var(--color-text)]">
       <Navbar />
 
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 py-12">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-2">
-          <TicketIcon className="w-7 h-7 text-pink-400" />
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-12 sm:px-6">
+        <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold md:text-3xl">
+          <TicketIcon className="h-7 w-7 text-[var(--color-accent)]" />
           My Tickets
         </h1>
-        <p className="text-gray-400 mb-6 text-sm">
+        <p className="mb-6 text-sm text-[var(--color-text-muted)]">
           Enter the email you used at checkout to find your tickets.
         </p>
 
-        <form onSubmit={handleSearch} className="flex gap-2 mb-8">
+        <form onSubmit={handleSearch} className="mb-8 flex gap-2">
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="flex-1 px-4 py-3 rounded-lg bg-white/5 border border-gray-700/50 text-white placeholder-gray-500 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/40"
+            className="flex-1 rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
           />
           <button
             type="submit"
             disabled={loading}
-            className="px-5 py-3 bg-gradient-to-r from-pink-400 to-cyan-400 text-white font-semibold rounded-lg flex items-center gap-2 disabled:opacity-50"
+            className="btn-aurora flex items-center gap-2 px-5 py-3 font-semibold disabled:opacity-50"
           >
-            <Search className="w-5 h-5" />
+            <Search className="h-5 w-5" />
             {loading ? "Searching..." : "Find"}
           </button>
         </form>
 
-        {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+        {error && (
+          <p className="mb-4 text-sm text-[var(--color-error)]">{error}</p>
+        )}
 
         {tickets && tickets.length === 0 && (
-          <p className="text-gray-400 text-sm">
+          <p className="text-sm text-[var(--color-text-muted)]">
             No tickets found for that email.
           </p>
         )}
@@ -114,35 +116,32 @@ export default function MyTicketsPage() {
         {tickets && tickets.length > 0 && (
           <ul className="space-y-4">
             {tickets.map((ticket) => (
-              <li
-                key={ticket._id}
-                className="bg-white/5 border border-gray-700/50 rounded-xl p-4 flex items-center gap-4"
-              >
+              <li key={ticket._id} className="card-surface flex items-center gap-4 p-4">
                 {ticket.event?.image && (
                   <Image
                     src={optimizedImage(ticket.event.image, "thumb")}
                     alt={ticket.event.title}
                     width={64}
                     height={64}
-                    className="rounded-lg object-cover w-16 h-16"
+                    className="h-16 w-16 rounded-[var(--radius-btn)] object-cover"
                   />
                 )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">
                     {ticket.event?.title || "Unknown event"}
                   </p>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-[var(--color-text-muted)]">
                     {ticket.ticketType} · {ticket.ticketId}
                   </p>
                   <span
-                    className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${statusStyles[ticket.status]}`}
+                    className={`mt-1 inline-block rounded-[var(--radius-pill)] px-2 py-0.5 text-xs font-medium ${statusStyles[ticket.status]}`}
                   >
                     {ticket.status}
                   </span>
                 </div>
                 <button
                   onClick={() => viewQR(ticket.ticketId)}
-                  className="px-3 py-2 text-sm border border-pink-400 text-pink-400 rounded-lg hover:bg-pink-400/20 transition"
+                  className="rounded-[var(--radius-btn)] border border-[var(--color-primary)] px-3 py-2 text-sm text-[var(--color-primary)] transition hover:bg-[var(--color-primary)]/20"
                 >
                   View QR
                 </button>
@@ -154,22 +153,22 @@ export default function MyTicketsPage() {
 
       {(qrLoading || qrImage) && (
         <div
-          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
           onClick={() => setQrImage(null)}
         >
           <div
-            className="bg-white rounded-xl p-6 relative max-w-xs w-full text-center"
+            className="relative w-full max-w-xs rounded-[var(--radius-card)] bg-white p-6 text-center"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setQrImage(null)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-black"
+              className="absolute right-3 top-3 text-gray-500 hover:text-black"
               aria-label="Close"
             >
-              <X className="w-5 h-5" />
+              <X className="h-5 w-5" />
             </button>
             {qrLoading ? (
-              <p className="text-black py-10">Loading QR...</p>
+              <p className="py-10 text-black">Loading QR...</p>
             ) : (
               qrImage && (
                 // eslint-disable-next-line @next/next/no-img-element

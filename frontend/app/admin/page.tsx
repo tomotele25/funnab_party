@@ -52,38 +52,43 @@ export default function AdminDashboard() {
           label: "Total Revenue",
           value: `₦${totals.totalRevenue.toLocaleString()}`,
           icon: <Wallet className="w-5 h-5" />,
-          accent: "text-pink-600 bg-pink-50",
+          accent: "text-[var(--color-accent)] bg-[var(--color-surface-2)]",
         },
         {
           label: "Platform Fees Collected",
           value: `₦${totals.totalPlatformFee.toLocaleString()}`,
           icon: <PiggyBank className="w-5 h-5" />,
-          accent: "text-green-600 bg-green-50",
+          accent: "text-[var(--color-success)] bg-[var(--color-surface-2)]",
         },
         {
           label: "Tickets Issued",
           value: totals.totalTickets.toLocaleString(),
           icon: <TicketIcon className="w-5 h-5" />,
-          accent: "text-cyan-600 bg-cyan-50",
+          accent: "text-[var(--color-secondary)] bg-[var(--color-surface-2)]",
         },
         {
           label: "Total Events",
           value: totals.totalEvents.toLocaleString(),
           icon: <Calendar className="w-5 h-5" />,
-          accent: "text-purple-600 bg-purple-50",
+          accent: "text-[var(--color-primary)] bg-[var(--color-surface-2)]",
         },
       ]
     : [];
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-black mb-1">Dashboard</h1>
-      <p className="text-gray-500 text-sm mb-6">
+      <h1
+        className="text-2xl font-bold text-[var(--color-text)] mb-1"
+        style={{ fontFamily: "var(--font-space-grotesk)" }}
+      >
+        Dashboard
+      </h1>
+      <p className="text-[var(--color-text-muted)] text-sm mb-6">
         Platform-wide performance at a glance.
       </p>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl p-4 mb-6">
+        <div className="bg-[var(--color-surface)] border border-[var(--color-error)]/30 text-[var(--color-error)] text-sm rounded-[var(--radius-card)] p-4 mb-6">
           {error}
         </div>
       )}
@@ -93,7 +98,7 @@ export default function AdminDashboard() {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 h-24 animate-pulse"
+              className="card-surface p-5 h-24 animate-pulse"
             />
           ))}
         </div>
@@ -103,16 +108,16 @@ export default function AdminDashboard() {
             {cards.map((card) => (
               <div
                 key={card.label}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4"
+                className="card-surface p-5 flex items-center gap-4"
               >
                 <div
-                  className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${card.accent}`}
+                  className={`w-11 h-11 rounded-[var(--radius-btn)] flex items-center justify-center shrink-0 ${card.accent}`}
                 >
                   {card.icon}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-500 truncate">{card.label}</p>
-                  <p className="text-lg font-bold text-black">{card.value}</p>
+                  <p className="text-xs text-[var(--color-text-muted)] truncate">{card.label}</p>
+                  <p className="text-lg font-bold text-[var(--color-text)]">{card.value}</p>
                 </div>
               </div>
             ))}

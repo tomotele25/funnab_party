@@ -103,8 +103,11 @@ export default function ScanPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
-      <h1 className="text-xl font-bold mb-4 flex items-center gap-2">
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] flex flex-col items-center justify-center p-4">
+      <h1
+        className="text-xl font-bold mb-4 flex items-center gap-2"
+        style={{ fontFamily: "var(--font-space-grotesk)" }}
+      >
         <ScanLine className="w-6 h-6" />
         Scan Ticket
       </h1>
@@ -112,14 +115,14 @@ export default function ScanPage() {
       {scanning && (
         <div
           id="qr-reader"
-          className="w-full max-w-sm rounded-xl overflow-hidden border border-gray-700"
+          className="w-full max-w-sm rounded-[var(--radius-card)] overflow-hidden border border-[var(--color-border)]"
         />
       )}
 
       {result && (
         <div
-          className={`w-full max-w-sm rounded-xl p-6 text-center ${
-            result.ok ? "bg-green-600" : "bg-red-600"
+          className={`w-full max-w-sm rounded-[var(--radius-card)] p-6 text-center ${
+            result.ok ? "bg-[var(--color-success)]" : "bg-[var(--color-error)]"
           }`}
         >
           {result.ok ? (
@@ -141,7 +144,7 @@ export default function ScanPage() {
 
           <button
             onClick={scanNext}
-            className="mt-4 w-full px-4 py-2 bg-white text-black font-semibold rounded-lg"
+            className="mt-4 w-full px-4 py-2 bg-white text-[var(--color-bg)] font-semibold rounded-[var(--radius-btn)]"
           >
             Scan Next
           </button>

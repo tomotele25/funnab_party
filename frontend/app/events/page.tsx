@@ -22,33 +22,38 @@ export default function EventsPage() {
   }, []);
 
   return (
-    <div className="bg-black text-white min-h-screen font-sans flex flex-col">
+    <div className="flex min-h-screen flex-col bg-[var(--color-bg)] font-sans text-[var(--color-text)]">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-3xl md:text-4xl font-extrabold mb-2 bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent">
-          All Events
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-12 sm:px-6 lg:px-8">
+        <h1
+          className="mb-2 text-3xl font-bold md:text-4xl"
+          style={{ fontFamily: "var(--font-space-grotesk)" }}
+        >
+          <span className="gradient-text-aurora">All Events</span>
         </h1>
-        <p className="text-gray-400 mb-8">
+        <p className="mb-8 text-[var(--color-text-muted)]">
           Every upcoming party happening around FUNAAB.
         </p>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="bg-white/5 rounded-xl h-72 animate-pulse border border-gray-700/50"
+                className="h-72 animate-pulse rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)]"
               />
             ))}
           </div>
         ) : events.length === 0 ? (
-          <div className="text-center py-20">
-            <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-600" />
-            <p className="text-gray-400">No upcoming events right now — check back soon.</p>
+          <div className="py-20 text-center">
+            <Calendar className="mx-auto mb-4 h-12 w-12 text-[var(--color-text-muted)]" />
+            <p className="text-[var(--color-text-muted)]">
+              No upcoming events right now — check back soon.
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => (
               <EventCard key={event._id} event={event} />
             ))}

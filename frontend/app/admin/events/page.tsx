@@ -22,10 +22,10 @@ interface EventRow {
 }
 
 const statusStyles: Record<EventStatus, string> = {
-  draft: "bg-gray-100 text-gray-700",
-  published: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
-  completed: "bg-blue-100 text-blue-700",
+  draft: "bg-[var(--color-surface-2)] text-[var(--color-text-muted)]",
+  published: "bg-[var(--color-success)]/15 text-[var(--color-success)]",
+  cancelled: "bg-[var(--color-error)]/15 text-[var(--color-error)]",
+  completed: "bg-[var(--color-secondary)]/15 text-[var(--color-secondary)]",
 };
 
 export default function AdminEventsPage() {
@@ -71,26 +71,31 @@ export default function AdminEventsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-black mb-1">Events</h1>
-      <p className="text-gray-500 text-sm mb-6">
+      <h1
+        className="text-2xl font-bold text-[var(--color-text)] mb-1"
+        style={{ fontFamily: "var(--font-space-grotesk)" }}
+      >
+        Events
+      </h1>
+      <p className="text-[var(--color-text-muted)] text-sm mb-6">
         Every event created on the platform.
       </p>
 
       {loading ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
+        <div className="card-surface p-4 space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-14 bg-gray-50 rounded-lg animate-pulse" />
+            <div key={i} className="h-14 bg-[var(--color-surface-2)] rounded-lg animate-pulse" />
           ))}
         </div>
       ) : events.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
-          <Calendar className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-          <p className="text-gray-500">No events yet.</p>
+        <div className="card-surface p-10 text-center">
+          <Calendar className="w-10 h-10 mx-auto mb-3 text-[var(--color-text-muted)]" />
+          <p className="text-[var(--color-text-muted)]">No events yet.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+        <div className="card-surface overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
+            <thead className="bg-[var(--color-surface-2)] text-[var(--color-text-muted)] text-xs uppercase tracking-wide">
               <tr>
                 <th className="p-4">Event</th>
                 <th className="p-4">Organizer</th>
@@ -108,29 +113,29 @@ export default function AdminEventsPage() {
                 return (
                   <tr
                     key={ev._id}
-                    className="border-t border-gray-100 hover:bg-gray-50/60 transition"
+                    className="border-t border-[var(--color-border)] hover:bg-[var(--color-surface-2)]/60 transition"
                   >
                     <td className="p-4">
-                      <p className="font-medium text-black">{ev.title}</p>
-                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                      <p className="font-medium text-[var(--color-text)]">{ev.title}</p>
+                      <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1 mt-0.5">
                         <MapPin className="w-3 h-3" />
                         {ev.location}
                       </p>
                     </td>
-                    <td className="p-4 text-gray-600">
+                    <td className="p-4 text-[var(--color-text-muted)]">
                       {ev.organizer?.fullname || "—"}
                     </td>
-                    <td className="p-4 text-gray-600">
+                    <td className="p-4 text-[var(--color-text-muted)]">
                       {new Date(ev.date).toLocaleDateString()}
                     </td>
                     <td className="p-4">
                       <div className="w-24">
-                        <p className="text-xs text-gray-600 mb-1">
+                        <p className="text-xs text-[var(--color-text-muted)] mb-1">
                           {sold} / {total}
                         </p>
-                        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-[var(--color-surface-2)] rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-pink-400 to-cyan-400"
+                            className="h-full gradient-aurora"
                             style={{ width: `${Math.min(pct, 100)}%` }}
                           />
                         </div>
@@ -138,7 +143,7 @@ export default function AdminEventsPage() {
                     </td>
                     <td className="p-4">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        className={`px-2 py-1 rounded-[var(--radius-pill)] text-xs font-medium ${
                           statusStyles[ev.status] || statusStyles.published
                         }`}
                       >
@@ -150,7 +155,7 @@ export default function AdminEventsPage() {
                         <button
                           onClick={() => updateStatus(ev._id, "cancelled")}
                           disabled={updatingId === ev._id}
-                          className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                          className="text-xs text-[var(--color-error)] hover:underline disabled:opacity-50"
                         >
                           {updatingId === ev._id ? "..." : "Cancel"}
                         </button>

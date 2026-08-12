@@ -11,6 +11,7 @@ import {
   Camera,
   Mic2,
   Search,
+  Sparkles,
 } from "lucide-react";
 import Navbar from "@/component/Navbar";
 import Footer from "@/component/Footer";
@@ -19,125 +20,55 @@ import axios from "axios";
 
 // Constants
 const images = ["/28569778881858678.jpeg"];
-const texts = ["Explore parties", "Book · SECURE · FAST", "Join the fun"];
 
 const BACKENDURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 type Event = EventCardData;
 
-// Example fallback today event (can be removed if fetching always)
-const todayEvent: Event = {
-  _id: "today-party-2025-08-17",
-  slug: "neon-nights-bash",
-  title: "Neon Nights Bash",
-  details:
-    "Join us for an electrifying night of music, lights, and dance at FUNAAB’s biggest party of the year!",
-  location: "FUNAAB Main Hall",
-  image: "/Hero (1).jpg",
-  date: "2025-08-17",
-  tickets: [
-    { type: "General Admission", price: 5000, quantity: 100, sold: 20 },
-    { type: "VIP", price: 10000, quantity: 20, sold: 5 },
-  ],
-  startTime: "No time",
-};
-
 // Features
 const features = [
   {
-    icon: <Ticket className="w-10 h-10 text-pink-400 animate-bounce-slow" />,
+    icon: <Ticket className="h-9 w-9 text-[var(--color-primary)]" />,
     title: "Easy Ticket Purchase",
     description:
       "Secure your spot at the hottest parties in seconds — no queues, no stress.",
   },
   {
-    icon: (
-      <MapPin className="w-10 h-10 text-cyan-400 animate-bounce-slow delay-100" />
-    ),
+    icon: <MapPin className="h-9 w-9 text-[var(--color-accent)]" />,
     title: "Discover Parties Near You",
     description:
       "Find trending events and secret raves happening right in your city or campus.",
   },
   {
-    icon: (
-      <ClipboardList className="w-10 h-10 text-purple-400 animate-bounce-slow delay-200" />
-    ),
+    icon: <ClipboardList className="h-9 w-9 text-[var(--color-secondary)]" />,
     title: "RSVP & Guest List",
     description:
       "Get your name on the VIP list before the night begins — be the one they let in first.",
   },
   {
-    icon: (
-      <Crown className="w-10 h-10 text-yellow-400 animate-bounce-slow delay-300" />
-    ),
+    icon: <Crown className="h-9 w-9 text-[var(--color-urgency)]" />,
     title: "VIP Access & Packages",
     description:
       "Upgrade to VIP for bottle service, private lounges, and front-row action.",
   },
   {
-    icon: (
-      <Camera className="w-10 h-10 text-fuchsia-400 animate-bounce-slow delay-400" />
-    ),
+    icon: <Camera className="h-9 w-9 text-[var(--color-accent)]" />,
     title: "Event Highlights",
     description:
       "Relive epic moments with high-quality after-party photos and videos.",
   },
   {
-    icon: (
-      <Mic2 className="w-10 h-10 text-green-400 animate-bounce-slow delay-500" />
-    ),
+    icon: <Mic2 className="h-9 w-9 text-[var(--color-primary)]" />,
     title: "Host Your Own Event",
     description:
       "Throw your own party and manage everything from tickets to guest lists.",
   },
 ];
 
-// Disco ball effect component
-const DiscoBall = ({
-  position,
-  delay,
-}: {
-  position: string;
-  delay?: string;
-}) => (
-  <div
-    className={`absolute w-32 h-32 md:w-48 md:h-48 rounded-full bg-gradient-to-br from-silver to-gray-300 opacity-70 animate-pulse-slow ${position} ${delay}`}
-    style={{
-      boxShadow:
-        "0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 105, 180, 0.3)",
-    }}
-  />
-);
-
 export default function Home() {
-  const [currentImage, setCurrentImage] = useState(0);
-  const [currentText, setCurrentText] = useState("");
-  const [textIndex, setTextIndex] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [todaysEventList, setTodaysEventList] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Hero carousel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % images.length);
-      setTextIndex((prev) => (prev + 1) % texts.length);
-      setCurrentText("");
-      setCharIndex(0);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (charIndex < texts[textIndex].length) {
-      const timeout = setTimeout(() => {
-        setCurrentText((prev) => prev + texts[textIndex][charIndex]);
-        setCharIndex((prev) => prev + 1);
-      }, 100);
-      return () => clearTimeout(timeout);
-    }
-  }, [charIndex, textIndex]);
 
   useEffect(() => {
     const fetchUpcomingEvents = async () => {
@@ -167,7 +98,9 @@ export default function Home() {
 
   const allEvents = useMemo(() => {
     const map = new Map<string, Event>();
-    [...todaysEventList, ...upcomingEvents].forEach((ev) => map.set(ev._id, ev));
+    [...todaysEventList, ...upcomingEvents].forEach((ev) =>
+      map.set(ev._id, ev)
+    );
     return Array.from(map.values());
   }, [todaysEventList, upcomingEvents]);
 
@@ -192,68 +125,92 @@ export default function Home() {
   }, [allEvents]);
 
   return (
-    <div className="bg-black text-white font-sans">
+    <div className="bg-[var(--color-bg)] font-sans text-[var(--color-text)]">
       <Navbar />
 
       {/* Hero Section */}
-      <div className="relative w-full h-[calc(100vh-5rem)] overflow-hidden">
-        {images.map((img, idx) => (
-          <div
-            key={idx}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              idx === currentImage ? "opacity-90" : "opacity-20"
-            }`}
+      <div className="relative h-[calc(100vh-4rem)] w-full min-h-[560px] overflow-hidden sm:h-[calc(100vh-4.5rem)]">
+        <Image
+          src={images[0]}
+          alt="FUNAAB Party crowd"
+          fill
+          className="object-cover opacity-40"
+          priority
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--color-bg)]/40 via-[var(--color-bg)]/70 to-[var(--color-bg)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(124,58,237,0.35),transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_60%,rgba(236,72,153,0.3),transparent_55%)]" />
+
+        <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
+          <span className="hero-fade-up mb-4 inline-flex items-center gap-2 rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)] backdrop-blur">
+            <Sparkles className="h-3.5 w-3.5 text-[var(--color-accent)]" />
+            Nigeria&apos;s campus party network
+          </span>
+
+          <h1
+            className="hero-fade-up mb-4 text-4xl font-bold leading-tight sm:text-5xl md:text-7xl"
+            style={{
+              fontFamily: "var(--font-space-grotesk)",
+              animationDelay: "0.1s",
+            }}
           >
-            <Image
-              src={img}
-              alt={`Hero ${idx}`}
-              fill
-              className="object-cover mix-blend-overlay"
-              priority={idx === 0}
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-          </div>
-        ))}
-        <div className="absolute inset-0 bg-black/30 z-10 flex flex-col justify-center items-center text-center px-4">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-            {currentText}
-            <span className="blinking-cursor">|</span>
+            <span className="gradient-text-aurora">Discover.</span>{" "}
+            <span className="text-[var(--color-text)]">Get Tickets.</span>{" "}
+            <span className="gradient-text-aurora">Show Up.</span>
           </h1>
-          <p className="text-base md:text-xl text-gray-300 mb-8">
-            Get ready to dance and book your next party night!
+          <p
+            className="hero-fade-up mb-8 max-w-xl text-base text-[var(--color-text-muted)] md:text-xl"
+            style={{ animationDelay: "0.2s" }}
+          >
+            The hottest parties, raves and campus events — find yours and
+            lock in your ticket in seconds.
           </p>
 
-          <div className="relative w-full max-w-md mb-2">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <div
+            className="hero-fade-up relative mb-2 w-full max-w-md"
+            style={{ animationDelay: "0.3s" }}
+          >
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--color-text-muted)]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search events by name or location..."
-              className="w-full pl-11 pr-4 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-gray-600/50 text-white placeholder-gray-400 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/40"
+              className="w-full rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-white/10 py-3 pl-11 pr-4 text-[var(--color-text)] placeholder-[var(--color-text-muted)] backdrop-blur-xl focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/40"
             />
           </div>
 
           {!searchQuery && (
-            <Link href="/events">
-              <button className="mt-6 px-8 py-3 bg-gradient-to-r from-white to-gray-100 text-black font-semibold rounded-lg hover:from-gray-100 hover:to-white transition-all duration-300 shadow-lg glow-button">
-                Hit the Dance Floor
-              </button>
-            </Link>
+            <div
+              className="hero-fade-up mt-6 flex flex-col gap-3 sm:flex-row"
+              style={{ animationDelay: "0.4s" }}
+            >
+              <Link href="/events">
+                <button className="btn-aurora px-8 py-3 font-semibold">
+                  Hit the Dance Floor
+                </button>
+              </Link>
+              <Link href="/organizer">
+                <button className="rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-white/5 px-8 py-3 font-semibold text-[var(--color-text)] backdrop-blur transition-colors duration-200 hover:border-[var(--color-primary)]">
+                  Host Your Event
+                </button>
+              </Link>
+            </div>
           )}
         </div>
       </div>
 
       {/* Search Results */}
       {searchQuery && (
-        <section className="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-20 bg-black">
-          <h2 className="text-xl md:text-2xl font-semibold mb-6 text-white">
+        <section className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-20">
+          <h2 className="mb-6 text-xl font-semibold md:text-2xl">
             {searchResults.length > 0
               ? `Results for "${searchQuery}"`
               : `No events found for "${searchQuery}"`}
           </h2>
           {searchResults.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {searchResults.map((event) => (
                 <EventCard key={event._id} event={event} />
               ))}
@@ -262,118 +219,109 @@ export default function Home() {
         </section>
       )}
 
-      {/* Featured Section */}
-      {!searchQuery && featuredEvents.length > 0 && (
-        <section className="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-20 bg-black">
-          <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-white">
-            🔥 Trending Now
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredEvents.map((event) => (
-              <EventCard key={event._id} event={event} />
-            ))}
-          </div>
-        </section>
-      )}
-
       {!searchQuery && (
         <>
-      {/* Today's Party Section */}
-      <section className="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-20 bg-gradient-to-b from-gray-900 to-black">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center mb-8 bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-md">
-          Today’s Party!
-        </h2>
+          {/* Featured Section */}
+          {featuredEvents.length > 0 && (
+            <section className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-20">
+              <h2 className="mb-8 text-2xl font-bold md:text-3xl">
+                🔥 Trending Now
+              </h2>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {featuredEvents.map((event) => (
+                  <EventCard key={event._id} event={event} />
+                ))}
+              </div>
+            </section>
+          )}
 
-        {todaysEventList.length === 0 ? (
-          <div className="text-center text-gray-400 py-12">
-            <p className="text-xl sm:text-2xl mb-4">
-              No events scheduled for today.
-            </p>
-            <Link
-              href="/events"
-              className="inline-block px-6 py-3 bg-pink-400 text-white rounded-lg hover:bg-pink-500 transition"
+          {/* Today's Party Section */}
+          <section className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-20">
+            <h2
+              className="mb-8 text-center text-3xl font-bold sm:text-4xl md:text-5xl"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
             >
-              Browse Upcoming Events
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {todaysEventList.map((event) => (
-              <EventCard key={event._id} event={event} />
-            ))}
-          </div>
-        )}
-      </section>
+              <span className="gradient-text-aurora">Today&apos;s Party!</span>
+            </h2>
 
-      {/* Upcoming Events Section */}
-      <section className="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-20 bg-gradient-to-b from-gray-900 via-black to-gray-900">
-        <h2 className="text-2xl md:text-3xl font-semibold text-center mb-8 text-pink-300 drop-shadow-md">
-          Upcoming Parties
-        </h2>
-        {upcomingEvents.length === 0 ? (
-          <p className="text-center text-gray-400 text-sm">
-            No upcoming events.
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {upcomingEvents.map((event) => (
-              <EventCard key={event._id} event={event} />
-            ))}
-          </div>
-        )}
-      </section>
+            {todaysEventList.length === 0 ? (
+              <div className="py-12 text-center text-[var(--color-text-muted)]">
+                <p className="mb-4 text-xl sm:text-2xl">
+                  No events scheduled for today.
+                </p>
+                <Link href="/events" className="btn-aurora inline-block px-6 py-3 font-semibold">
+                  Browse Upcoming Events
+                </Link>
+              </div>
+            ) : (
+              <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {todaysEventList.map((event) => (
+                  <EventCard key={event._id} event={event} />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Upcoming Events Section */}
+          <section className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-20">
+            <h2 className="mb-8 text-center text-2xl font-bold text-[var(--color-text)] md:text-3xl">
+              Upcoming Parties
+            </h2>
+            {upcomingEvents.length === 0 ? (
+              <p className="text-center text-sm text-[var(--color-text-muted)]">
+                No upcoming events.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {upcomingEvents.map((event) => (
+                  <EventCard key={event._id} event={event} />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Features */}
+          <section className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-20">
+            <h2 className="mb-10 text-center text-2xl font-bold md:text-3xl">
+              Why FUNAAB Party
+            </h2>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {features.map((f) => (
+                <div key={f.title} className="card-surface p-6">
+                  <div className="mb-4">{f.icon}</div>
+                  <h3 className="mb-2 text-lg font-bold">{f.title}</h3>
+                  <p className="text-sm text-[var(--color-text-muted)]">
+                    {f.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Organizer CTA */}
+          <section className="relative mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-20">
+            <div className="relative overflow-hidden rounded-[var(--radius-card)] p-10 text-center gradient-aurora sm:p-16">
+              <h2
+                className="mb-3 text-2xl font-bold text-white md:text-4xl"
+                style={{ fontFamily: "var(--font-space-grotesk)" }}
+              >
+                Got an event to throw?
+              </h2>
+              <p className="mx-auto mb-8 max-w-xl text-white/90">
+                Create your event, sell tickets, and manage your guest list
+                — all from one dashboard.
+              </p>
+              <Link href="/signup">
+                <button className="rounded-[var(--radius-btn)] bg-white px-8 py-3 font-semibold text-[var(--color-primary-dark)] transition-transform duration-200 hover:scale-105">
+                  Start Selling Tickets
+                </button>
+              </Link>
+            </div>
+          </section>
         </>
       )}
 
       <Footer />
-
-      <style jsx global>{`
-        .blinking-cursor {
-          animation: blink 1s ease-in-out infinite;
-        }
-        @keyframes blink {
-          0%,
-          100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0;
-          }
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 3s infinite;
-        }
-        @keyframes pulse-slow {
-          0%,
-          100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.8;
-          }
-        }
-        .animate-bounce-slow {
-          animation: bounce 3s infinite;
-        }
-        @keyframes bounce {
-          0%,
-          100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-6px);
-          }
-        }
-        .glow-button {
-          box-shadow: 0 0 10px rgba(255, 105, 180, 0.3);
-        }
-        .glow-button:hover {
-          box-shadow: 0 0 15px rgba(255, 105, 180, 0.5);
-        }
-        .glow-effect:hover {
-          box-shadow: 0 0 10px rgba(255, 0, 128, 0.3);
-        }
-      `}</style>
     </div>
   );
 }

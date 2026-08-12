@@ -51,31 +51,32 @@ const EventCard = ({ event }: { event?: EventCardData }) => {
       href={`/event/${event.slug}`}
       aria-label={`View details for ${event.title}`}
       role="article"
+      className="group block h-full"
     >
-      <div className="relative rounded-xl overflow-hidden bg-white/3 border border-gray-700/50 backdrop-blur-xl transition-all duration-300 hover:scale-102 hover:border-pink-400/50 hover:shadow-[0_0_10px_rgba(255,0,128,0.3)] group h-full flex flex-col">
-        <div className="relative">
+      <div className="card-surface flex h-full flex-col overflow-hidden transition-all duration-300 ease-[var(--ease-standard)] hover:-translate-y-1 hover:border-[var(--color-primary)]/50 hover:shadow-[var(--shadow-glow-primary)]">
+        <div className="relative overflow-hidden">
           <Image
             src={optimizedImage(event.image, "card")}
             alt={event.title}
             width={500}
             height={300}
-            className="object-cover w-full h-44 md:h-52"
+            className="h-44 w-full object-cover transition-transform duration-500 ease-[var(--ease-standard)] group-hover:scale-110 md:h-52"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg)] via-transparent to-transparent" />
 
-          <div className="absolute top-3 left-3 flex gap-2">
-            <span className="px-2 py-1 bg-black/70 backdrop-blur rounded-full text-xs font-semibold text-cyan-300">
+          <div className="absolute left-3 top-3 flex gap-2">
+            <span className="rounded-[var(--radius-pill)] bg-black/60 px-2 py-1 text-xs font-semibold text-[var(--color-text)] backdrop-blur">
               {formattedDate}
             </span>
             {isSoldOut ? (
-              <span className="px-2 py-1 bg-red-500/80 backdrop-blur rounded-full text-xs font-semibold text-white">
+              <span className="rounded-[var(--radius-pill)] bg-[var(--color-error)]/90 px-2 py-1 text-xs font-semibold text-white backdrop-blur">
                 Sold Out
               </span>
             ) : (
               isLowStock && (
-                <span className="px-2 py-1 bg-yellow-500/80 backdrop-blur rounded-full text-xs font-semibold text-black">
+                <span className="rounded-[var(--radius-pill)] bg-[var(--color-urgency)]/90 px-2 py-1 text-xs font-semibold text-black backdrop-blur">
                   Selling Fast
                 </span>
               )
@@ -83,23 +84,29 @@ const EventCard = ({ event }: { event?: EventCardData }) => {
           </div>
         </div>
 
-        <div className="p-4 md:p-5 flex-1 flex flex-col gap-2">
-          <h3 className="text-white font-bold text-base md:text-lg leading-tight line-clamp-2">
+        <div className="flex flex-1 flex-col gap-2 p-4 md:p-5">
+          <h3 className="line-clamp-2 text-base font-bold leading-tight text-[var(--color-text)] md:text-lg">
             {event.title}
           </h3>
-          <p className="text-cyan-300 text-xs md:text-sm">{event.location}</p>
+          <p className="text-xs text-[var(--color-text-muted)] md:text-sm">
+            {event.location}
+          </p>
 
-          <div className="mt-auto pt-2 flex items-center justify-between">
-            <span className="text-pink-400 font-semibold text-sm md:text-base">
-              {minPrice !== null ? `From ₦${minPrice.toLocaleString()}` : "Free"}
+          <div className="mt-auto flex items-center justify-between pt-2">
+            <span className="gradient-text-aurora text-sm font-bold md:text-base">
+              {minPrice !== null
+                ? `From ₦${minPrice.toLocaleString()}`
+                : "Free"}
             </span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-[var(--color-text-muted)]">
               {isSoldOut ? "0 left" : `${totalRemaining} left`}
             </span>
           </div>
-        </div>
 
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,0,128,0.1),transparent)] opacity-0 group-hover:opacity-50 transition-opacity duration-300 pointer-events-none" />
+          <span className="btn-aurora mt-3 w-full py-2 text-center text-sm font-semibold">
+            Get Tickets
+          </span>
+        </div>
       </div>
     </Link>
   );

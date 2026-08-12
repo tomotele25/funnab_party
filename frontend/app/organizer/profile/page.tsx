@@ -17,10 +17,15 @@ export default function OrganizerProfilePage() {
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-2xl font-bold text-black mb-6">Profile</h1>
+      <h1
+        className="text-2xl font-bold text-[var(--color-text)] mb-6"
+        style={{ fontFamily: "var(--font-space-grotesk)" }}
+      >
+        Profile
+      </h1>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="bg-gradient-to-r from-pink-400 to-cyan-400 p-6 flex items-center gap-4">
+      <div className="card-surface overflow-hidden">
+        <div className="gradient-aurora p-6 flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white text-xl font-bold border-2 border-white/40">
             {initials || <User className="w-7 h-7" />}
           </div>
@@ -36,24 +41,24 @@ export default function OrganizerProfilePage() {
 
         <div className="p-6 space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gray-50 flex items-center justify-center text-gray-500">
+            <div className="w-9 h-9 rounded-lg bg-[var(--color-surface-2)] flex items-center justify-center text-[var(--color-text-muted)]">
               <Mail className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Email</p>
-              <p className="text-sm font-medium text-black">
+              <p className="text-xs text-[var(--color-text-muted)]">Email</p>
+              <p className="text-sm font-medium text-[var(--color-text)]">
                 {session?.user?.email || "—"}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gray-50 flex items-center justify-center text-gray-500">
+            <div className="w-9 h-9 rounded-lg bg-[var(--color-surface-2)] flex items-center justify-center text-[var(--color-text-muted)]">
               <Shield className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Account Type</p>
-              <p className="text-sm font-medium text-black">Organizer</p>
+              <p className="text-xs text-[var(--color-text-muted)]">Account Type</p>
+              <p className="text-sm font-medium text-[var(--color-text)]">Organizer</p>
             </div>
           </div>
         </div>
@@ -64,7 +69,7 @@ export default function OrganizerProfilePage() {
               await signOut({ redirect: false });
               router.push("/login");
             }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 transition"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-[var(--color-error)]/30 text-[var(--color-error)] rounded-[var(--radius-btn)] font-medium hover:bg-[var(--color-error)]/10 transition"
           >
             <LogOut className="w-4 h-4" />
             Log Out

@@ -42,25 +42,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   if (status === "loading" || !session || session.user?.role !== "admin") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-500">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)] text-[var(--color-text-muted)]">
         Checking access...
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-[var(--color-bg)]">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-52 bg-white border-r shadow-md transform transition-transform duration-300 z-20
+        className={`fixed inset-y-0 left-0 w-52 bg-[var(--color-surface)] border-r border-[var(--color-border)] shadow-md transform transition-transform duration-300 z-20
           ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0`}
       >
         <div className="flex flex-col h-full justify-between">
           <div>
-            <div className="p-4 border-b flex items-center gap-2">
-              <div className="w-8 h-8 relative border border-pink-200 rounded-full bg-white p-1">
+            <div className="p-4 border-b border-[var(--color-border)] flex items-center gap-2">
+              <div className="w-8 h-8 relative border border-[var(--color-border)] rounded-full bg-[var(--color-surface-2)] p-1">
                 <Image
                   src={crownLogo}
                   alt="Funaab Party crown logo"
@@ -68,7 +68,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   className="object-contain"
                 />
               </div>
-              <h1 className="text-lg font-bold text-black">Admin</h1>
+              <h1
+                className="text-lg font-bold text-[var(--color-text)]"
+                style={{ fontFamily: "var(--font-space-grotesk)" }}
+              >
+                Admin
+              </h1>
             </div>
 
             <nav className="p-4">
@@ -77,7 +82,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="flex items-center gap-2 text-gray-700 hover:text-black font-medium p-2 rounded-md hover:bg-gray-100 transition"
+                      className="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] font-medium p-2 rounded-md hover:bg-[var(--color-surface-2)] transition"
                     >
                       {link.icon}
                       <span className="text-sm">{link.name}</span>
@@ -88,10 +93,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </nav>
           </div>
 
-          <div className="p-4 border-t">
+          <div className="p-4 border-t border-[var(--color-border)]">
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-black text-white rounded hover:bg-gray-800 transition text-sm"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 btn-aurora text-sm"
             >
               <LogOut size={18} />
               Logout
@@ -102,11 +107,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Main content */}
       <div className="flex-1 md:ml-52">
-        <header className="flex items-center justify-between bg-white p-3 shadow md:hidden">
-          <h2 className="text-lg font-bold">Admin</h2>
+        <header className="flex items-center justify-between bg-[var(--color-surface)] p-3 shadow md:hidden">
+          <h2
+            className="text-lg font-bold text-[var(--color-text)]"
+            style={{ fontFamily: "var(--font-space-grotesk)" }}
+          >
+            Admin
+          </h2>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-md border border-gray-300"
+            className="p-2 rounded-md border border-[var(--color-border)] text-[var(--color-text)]"
           >
             <Menu size={20} />
           </button>

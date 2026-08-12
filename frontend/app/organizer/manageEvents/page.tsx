@@ -29,10 +29,10 @@ interface EventRow {
 }
 
 const statusStyles: Record<string, string> = {
-  draft: "bg-gray-100 text-gray-700",
-  published: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
-  completed: "bg-blue-100 text-blue-700",
+  draft: "bg-[var(--color-surface-2)] text-[var(--color-text-muted)]",
+  published: "bg-[var(--color-success)]/15 text-[var(--color-success)]",
+  cancelled: "bg-[var(--color-error)]/15 text-[var(--color-error)]",
+  completed: "bg-[var(--color-secondary)]/15 text-[var(--color-secondary)]",
 };
 
 export default function EventManagerPage() {
@@ -186,24 +186,29 @@ export default function EventManagerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-black">
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <div className="px-2">
         <section className="mb-10">
-          <h2 className="text-xl font-semibold mb-4">Your Events</h2>
+          <h2
+            className="text-xl font-semibold mb-4"
+            style={{ fontFamily: "var(--font-space-grotesk)" }}
+          >
+            Your Events
+          </h2>
 
           {eventsLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-2xl shadow-sm h-64 animate-pulse" />
+                <div key={i} className="card-surface h-64 animate-pulse" />
               ))}
             </div>
           ) : events.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
-              <CalendarIcon className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-              <p className="text-gray-500 mb-4">You haven&apos;t created any events yet.</p>
+            <div className="card-surface p-10 text-center">
+              <CalendarIcon className="w-10 h-10 mx-auto mb-3 text-[var(--color-text-muted)]" />
+              <p className="text-[var(--color-text-muted)] mb-4">You haven&apos;t created any events yet.</p>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition"
+                className="inline-flex items-center gap-2 px-5 py-2.5 btn-aurora font-medium"
               >
                 <Plus className="w-4 h-4" />
                 Create your first event
@@ -217,7 +222,7 @@ export default function EventManagerPage() {
                 return (
                   <div
                     key={ev._id}
-                    className="bg-white shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition border border-gray-100"
+                    className="card-surface overflow-hidden hover:shadow-md transition"
                   >
                     <div className="relative h-40 w-full">
                       <Image
@@ -228,7 +233,7 @@ export default function EventManagerPage() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <span
-                        className={`absolute top-3 right-3 text-xs px-2 py-1 rounded-full font-medium ${
+                        className={`absolute top-3 right-3 text-xs px-2 py-1 rounded-[var(--radius-pill)] font-medium ${
                           statusStyles[ev.status] || statusStyles.published
                         }`}
                       >
@@ -239,15 +244,15 @@ export default function EventManagerPage() {
                       </h3>
                     </div>
                     <div className="p-4">
-                      <p className="text-gray-700 flex items-center gap-1.5 text-sm">
+                      <p className="text-[var(--color-text)] flex items-center gap-1.5 text-sm">
                         <MapPin className="w-3.5 h-3.5" />
                         {ev.location}
                       </p>
-                      <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                      <p className="text-sm text-[var(--color-text-muted)] mt-1 flex items-center gap-1.5">
                         <CalendarIcon className="w-3.5 h-3.5" />
                         {new Date(ev.date).toLocaleDateString()}
                       </p>
-                      <p className="text-xs text-gray-400 mt-2">
+                      <p className="text-xs text-[var(--color-text-muted)] mt-2">
                         {sold} / {capacity} tickets sold
                       </p>
                     </div>
@@ -262,28 +267,33 @@ export default function EventManagerPage() {
       {/* Floating create button */}
       <button
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-6 right-6 bg-black text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-gray-800 transition text-3xl"
+        className="fixed bottom-6 right-6 btn-aurora rounded-full w-14 h-14 flex items-center justify-center shadow-lg text-3xl"
       >
         +
       </button>
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-white/30 backdrop-blur-md z-50">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative overflow-y-auto max-h-[90vh]">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-50">
+          <div className="card-surface w-full max-w-md p-6 relative overflow-y-auto max-h-[90vh]">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-black"
+              className="absolute top-3 right-3 text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
             >
               ✕
             </button>
 
-            <h2 className="text-xl font-bold mb-4">Create New Event</h2>
+            <h2
+              className="text-xl font-bold mb-4"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Create New Event
+            </h2>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Title */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
                   Event Title
                 </label>
                 <input
@@ -291,14 +301,14 @@ export default function EventManagerPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Enter event title"
-                  className="w-full border border-gray-300 p-3 rounded-lg text-black focus:ring-2 focus:ring-black focus:outline-none"
+                  className="w-full border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3 rounded-[var(--radius-btn)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
                   required
                 />
               </div>
 
               {/* Location */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
                   Location
                 </label>
                 <input
@@ -306,70 +316,70 @@ export default function EventManagerPage() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="Enter event location"
-                  className="w-full border border-gray-300 p-3 rounded-lg text-black focus:ring-2 focus:ring-black focus:outline-none"
+                  className="w-full border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3 rounded-[var(--radius-btn)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
                   required
                 />
               </div>
 
               {/* Details */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
                   Details
                 </label>
                 <textarea
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
                   placeholder="Enter event details"
-                  className="w-full border border-gray-300 p-3 rounded-lg text-black focus:ring-2 focus:ring-black focus:outline-none"
+                  className="w-full border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3 rounded-[var(--radius-btn)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
                   required
                 />
               </div>
 
               {/* Start Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
                   Start Date
                 </label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full border border-gray-300 p-3 rounded-lg text-black focus:ring-2 focus:ring-black focus:outline-none"
+                  className="w-full border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3 rounded-[var(--radius-btn)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
                   required
                 />
               </div>
 
               {/* Start Time */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
                   Start Time
                 </label>
                 <input
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full border border-gray-300 p-3 rounded-lg text-black focus:ring-2 focus:ring-black focus:outline-none"
+                  className="w-full border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3 rounded-[var(--radius-btn)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
                   required
                 />
               </div>
 
               {/* End Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
                   End Date
                 </label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full border border-gray-300 p-3 rounded-lg text-black focus:ring-2 focus:ring-black focus:outline-none"
+                  className="w-full border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3 rounded-[var(--radius-btn)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
                   required
                 />
               </div>
 
               {/* Tickets */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-2">
                   Tickets
                 </label>
                 {tickets.map((ticket, index) => (
@@ -381,7 +391,7 @@ export default function EventManagerPage() {
                       onChange={(e) =>
                         handleTicketChange(index, "type", e.target.value)
                       }
-                      className="border p-2 rounded"
+                      className="border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-text)] p-2 rounded"
                       required
                     />
                     <input
@@ -391,7 +401,7 @@ export default function EventManagerPage() {
                       onChange={(e) =>
                         handleTicketChange(index, "price", e.target.value)
                       }
-                      className="border p-2 rounded"
+                      className="border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-text)] p-2 rounded"
                       required
                     />
                     <input
@@ -401,7 +411,7 @@ export default function EventManagerPage() {
                       onChange={(e) =>
                         handleTicketChange(index, "quantity", e.target.value)
                       }
-                      className="border p-2 rounded"
+                      className="border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-text)] p-2 rounded"
                       required
                     />
                     <input
@@ -411,13 +421,13 @@ export default function EventManagerPage() {
                       onChange={(e) =>
                         handleTicketChange(index, "deadline", e.target.value)
                       }
-                      className="border p-2 rounded"
+                      className="border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-text)] p-2 rounded"
                     />
                     {index > 0 && (
                       <button
                         type="button"
                         onClick={() => removeTicket(index)}
-                        className="col-span-1 text-red-500 font-bold"
+                        className="col-span-1 text-[var(--color-error)] font-bold"
                       >
                         ✕
                       </button>
@@ -427,7 +437,7 @@ export default function EventManagerPage() {
                 <button
                   type="button"
                   onClick={addTicket}
-                  className="text-sm text-blue-500 hover:underline"
+                  className="text-sm text-[var(--color-secondary)] hover:underline"
                 >
                   + Add Ticket
                 </button>
@@ -435,13 +445,13 @@ export default function EventManagerPage() {
 
               {/* Bank Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
                   Bank Name
                 </label>
                 <select
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  className="w-full border border-gray-300 p-3 rounded-lg text-black focus:ring-2 focus:ring-black focus:outline-none"
+                  className="w-full border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3 rounded-[var(--radius-btn)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
                   required
                 >
                   <option value="">Select Bank</option>
@@ -455,7 +465,7 @@ export default function EventManagerPage() {
 
               {/* Account Number */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
                   Account Number
                 </label>
                 <input
@@ -463,22 +473,22 @@ export default function EventManagerPage() {
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value)}
                   placeholder="Enter account number"
-                  className="w-full border border-gray-300 p-3 rounded-lg text-black focus:ring-2 focus:ring-black focus:outline-none"
+                  className="w-full border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3 rounded-[var(--radius-btn)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
                   required
                 />
               </div>
 
               {/* Image Upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
                   Event Image
                 </label>
                 <input
                   type="file"
                   onChange={(e) => setImage(e.target.files?.[0] || null)}
-                  className="w-full border border-gray-300 p-3 rounded-lg text-black bg-gray-50 file:mr-4 file:py-2 file:px-4 
-                  file:rounded-full file:border-0 file:text-sm file:font-semibold 
-                  file:bg-black file:text-white hover:file:bg-gray-800"
+                  className="w-full border border-[var(--color-border)] p-3 rounded-[var(--radius-btn)] text-[var(--color-text)] bg-[var(--color-surface-2)] file:mr-4 file:py-2 file:px-4
+                  file:rounded-full file:border-0 file:text-sm file:font-semibold
+                  file:bg-[var(--color-primary)] file:text-white hover:file:bg-[var(--color-primary-dark)]"
                   required
                 />
               </div>
@@ -489,14 +499,14 @@ export default function EventManagerPage() {
                   type="button"
                   disabled={loading}
                   onClick={(e) => handleSubmit(e, "draft")}
-                  className="flex-1 bg-gray-200 text-black py-3 rounded-lg font-medium hover:bg-gray-300 transition flex items-center justify-center"
+                  className="flex-1 bg-[var(--color-surface-2)] text-[var(--color-text)] py-3 rounded-[var(--radius-btn)] font-medium hover:brightness-125 transition flex items-center justify-center"
                 >
                   {loading ? <Loader /> : "Save as Draft"}
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition flex items-center justify-center"
+                  className="flex-1 btn-aurora py-3 font-medium flex items-center justify-center"
                 >
                   {loading ? <Loader /> : "Publish"}
                 </button>
