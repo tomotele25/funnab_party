@@ -1,30 +1,76 @@
 "use client";
 
 import axios from "axios";
-import { useState } from "react";
+import Image from "next/image";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { MapPin, Calendar as CalendarIcon, Plus } from "lucide-react";
 import Loader from "@/component/Loader";
 import toast from "react-hot-toast";
+import { optimizedImage } from "@/lib/cloudinaryUrl";
 
-const BACKENDURL = "https://funnabparty-backend.vercel.app";
+const BACKENDURL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+interface TicketTier {
+  type: string;
+  price: number;
+  quantity: number;
+  sold: number;
+}
+
+interface EventRow {
+  _id: string;
+  title: string;
+  location: string;
+  date: string;
+  image: string;
+  status: string;
+  tickets: TicketTier[];
+}
+
+const statusStyles: Record<string, string> = {
+  draft: "bg-gray-100 text-gray-700",
+  published: "bg-green-100 text-green-700",
+  cancelled: "bg-red-100 text-red-700",
+  completed: "bg-blue-100 text-blue-700",
+};
+
 export default function EventManagerPage() {
   const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [events, setEvents] = useState<EventRow[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+
+  const fetchEvents = useCallback(() => {
+    if (!session?.user?.accessToken) return;
+    axios
+      .get(`${BACKENDURL}/api/my-events`, {
+        headers: { Authorization: `Bearer ${session.user.accessToken}` },
+      })
+      .then((res) => setEvents(res.data.events))
+      .catch((err) => console.error(err))
+      .finally(() => setEventsLoading(false));
+  }, [session]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   // form state
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [details, setDetails] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [startTime, setStartTime] = useState(""); // ✅ new state
   const [date, setDate] = useState("");
   const [image, setImage] = useState<File | null>(null);
 
-  // tickets state (array)
+  // tickets state
   const [tickets, setTickets] = useState<
     { type: string; price: string; quantity: string; deadline: string }[]
   >([{ type: "", price: "", quantity: "", deadline: "" }]);
 
-  // bank and account
   const [bankName, setBankName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
 
@@ -61,12 +107,15 @@ export default function EventManagerPage() {
     setTickets(tickets.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (
+    e: React.FormEvent,
+    status: "draft" | "published" = "published"
+  ) => {
     e.preventDefault();
     setLoading(true);
 
     if (!session?.user?.accessToken) {
-      alert("You must be logged in to create an event.");
+      toast.error("You must be logged in to create an event.");
       setLoading(false);
       return;
     }
@@ -75,8 +124,11 @@ export default function EventManagerPage() {
     formData.append("title", title);
     formData.append("location", location);
     formData.append("details", details);
+    formData.append("startDate", startDate);
+    formData.append("startTime", startTime); // ✅ send start time
     formData.append("date", date);
     if (image) formData.append("image", image);
+
     formData.append(
       "tickets",
       JSON.stringify(
@@ -89,24 +141,27 @@ export default function EventManagerPage() {
       )
     );
 
-    // append bank info
     formData.append("bankName", bankName);
     formData.append("accountNumber", accountNumber);
+    formData.append("status", status);
 
     try {
-      const res = await axios.post(`${BACKENDURL}/api/create-event`, formData, {
+      await axios.post(`${BACKENDURL}/api/create-event`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${session.user.accessToken}`,
         },
       });
 
-      if (res) toast.success("Event created successfully");
+      toast.success("Event created successfully 🎉");
+      fetchEvents();
 
       // Reset form
       setTitle("");
       setLocation("");
       setDetails("");
+      setStartDate("");
+      setStartTime(""); // ✅ reset
       setDate("");
       setImage(null);
       setTickets([{ type: "", price: "", quantity: "", deadline: "" }]);
@@ -134,35 +189,77 @@ export default function EventManagerPage() {
     <div className="min-h-screen bg-gray-50 text-black">
       <div className="px-2">
         <section className="mb-10">
-          <h2 className="text-xl font-semibold mb-4">Upcoming Events</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Example Event Card */}
-            <div className="bg-white shadow-lg rounded-2xl overflow-hidden hover:shadow-2xl transition">
-              <div className="relative h-48 w-full">
-                <img
-                  src="https://images.unsplash.com/photo-1506765515384-028b60a970df?auto=format&fit=crop&w=1500&q=80"
-                  alt="Event"
-                  className="object-cover w-full h-full"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                <button className="absolute top-3 right-3 bg-white/90 text-sm px-3 py-1 rounded-full shadow hover:bg-white">
-                  Edit
-                </button>
-                <h3 className="absolute bottom-3 left-3 text-white text-xl font-bold drop-shadow-lg">
-                  Summer Beats Festival
-                </h3>
-              </div>
-              <div className="p-4">
-                <p className="text-gray-700 flex items-center gap-1">
-                  📍 <span>Lagos, Nigeria</span>
-                </p>
-                <p className="text-sm text-gray-500 mt-1">📅 Aug 28, 2025</p>
-              </div>
+          <h2 className="text-xl font-semibold mb-4">Your Events</h2>
+
+          {eventsLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-2xl shadow-sm h-64 animate-pulse" />
+              ))}
             </div>
-          </div>
+          ) : events.length === 0 ? (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
+              <CalendarIcon className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+              <p className="text-gray-500 mb-4">You haven&apos;t created any events yet.</p>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition"
+              >
+                <Plus className="w-4 h-4" />
+                Create your first event
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {events.map((ev) => {
+                const sold = ev.tickets.reduce((s, t) => s + t.sold, 0);
+                const capacity = ev.tickets.reduce((s, t) => s + t.quantity, 0);
+                return (
+                  <div
+                    key={ev._id}
+                    className="bg-white shadow-sm rounded-2xl overflow-hidden hover:shadow-md transition border border-gray-100"
+                  >
+                    <div className="relative h-40 w-full">
+                      <Image
+                        src={optimizedImage(ev.image, "card")}
+                        alt={ev.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <span
+                        className={`absolute top-3 right-3 text-xs px-2 py-1 rounded-full font-medium ${
+                          statusStyles[ev.status] || statusStyles.published
+                        }`}
+                      >
+                        {ev.status}
+                      </span>
+                      <h3 className="absolute bottom-3 left-3 text-white text-lg font-bold drop-shadow-lg truncate right-3">
+                        {ev.title}
+                      </h3>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-gray-700 flex items-center gap-1.5 text-sm">
+                        <MapPin className="w-3.5 h-3.5" />
+                        {ev.location}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                        <CalendarIcon className="w-3.5 h-3.5" />
+                        {new Date(ev.date).toLocaleDateString()}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-2">
+                        {sold} / {capacity} tickets sold
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
       </div>
 
+      {/* Floating create button */}
       <button
         onClick={() => setIsModalOpen(true)}
         className="fixed bottom-6 right-6 bg-black text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-gray-800 transition text-3xl"
@@ -170,6 +267,7 @@ export default function EventManagerPage() {
         +
       </button>
 
+      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-white/30 backdrop-blur-md z-50">
           <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative overflow-y-auto max-h-[90vh]">
@@ -183,7 +281,7 @@ export default function EventManagerPage() {
             <h2 className="text-xl font-bold mb-4">Create New Event</h2>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Event Title */}
+              {/* Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Event Title
@@ -227,10 +325,38 @@ export default function EventManagerPage() {
                 />
               </div>
 
-              {/* Date */}
+              {/* Start Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Date
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full border border-gray-300 p-3 rounded-lg text-black focus:ring-2 focus:ring-black focus:outline-none"
+                  required
+                />
+              </div>
+
+              {/* Start Time */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Time
+                </label>
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full border border-gray-300 p-3 rounded-lg text-black focus:ring-2 focus:ring-black focus:outline-none"
+                  required
+                />
+              </div>
+
+              {/* End Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Date
                 </label>
                 <input
                   type="date"
@@ -357,13 +483,24 @@ export default function EventManagerPage() {
                 />
               </div>
 
-              {/* Save Button */}
-              <button
-                type="submit"
-                className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition"
-              >
-                {loading ? <Loader /> : "Create Event"}
-              </button>
+              {/* Submit buttons with Loader + Toast */}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={(e) => handleSubmit(e, "draft")}
+                  className="flex-1 bg-gray-200 text-black py-3 rounded-lg font-medium hover:bg-gray-300 transition flex items-center justify-center"
+                >
+                  {loading ? <Loader /> : "Save as Draft"}
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition flex items-center justify-center"
+                >
+                  {loading ? <Loader /> : "Publish"}
+                </button>
+              </div>
             </form>
           </div>
         </div>

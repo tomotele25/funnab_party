@@ -1,14 +1,28 @@
 require("dotenv").config();
 const axios = require("axios");
+const crypto = require("crypto");
+const QRCode = require("qrcode");
 const Transaction = require("../models/transaction");
+const Ticket = require("../models/purchasedTicket");
+const Event = require("../models/events");
+const { sendTicketEmail } = require("../utils/mailer");
+const { getOrCreateSettings } = require("./admin-controller");
 
-// Initialize Paystack payment
+const signQrToken = (qrToken) =>
+  crypto
+    .createHmac("sha256", process.env.QR_SECRET)
+    .update(qrToken)
+    .digest("hex");
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const initializePayment = async (req, res) => {
   try {
-    const { email, amount, items } = req.body;
+    const { email, amount, items, userName, accountNo } = req.body;
 
     if (
       !email ||
+      !userName ||
       !amount ||
       !items ||
       !Array.isArray(items) ||
@@ -17,18 +31,29 @@ const initializePayment = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields." });
     }
 
-    // Create transactions for each item
+    if (!EMAIL_REGEX.test(email)) {
+      return res.status(400).json({ message: "Invalid email address." });
+    }
+
+    if (typeof amount !== "number" || amount <= 0) {
+      return res.status(400).json({ message: "Invalid amount." });
+    }
+
     const transactions = await Promise.all(
       items.map((item) => {
-        if (!item.eventId || !item.organizer) {
-          throw new Error("Item is missing eventId or organizer");
+        if (!item.eventId || !item.organizer || !item.ticketType) {
+          throw new Error("Item is missing eventId, organizer or ticketType");
         }
 
         return Transaction.create({
           eventId: item.eventId,
           organizer: item.organizer,
+          ticketType: item.ticketType,
           amount: item.price * item.quantity,
-          paystackRefrence: `TRX-${Date.now()}-${item.id}`,
+          expectedAmount: item.price * item.quantity,
+          userName,
+          userEmail: email,
+          paystackReference: `TRX-${Date.now()}-${item.eventId}`,
         });
       })
     );
@@ -40,8 +65,8 @@ const initializePayment = async (req, res) => {
       {
         email,
         amount: amount * 100,
-        reference: firstTransaction.paystackRefrence,
-        callback_url: "https://funnabparty.vercel.app/event/payment",
+        reference: firstTransaction.paystackReference,
+        callback_url: "http://localhost:3000/event/payment",
       },
       {
         headers: {
@@ -53,7 +78,7 @@ const initializePayment = async (req, res) => {
 
     return res.status(200).json({
       authorization_url: paystackRes.data.data.authorization_url,
-      reference: firstTransaction.paystackRefrence,
+      reference: firstTransaction.paystackReference,
     });
   } catch (error) {
     console.error(error.response?.data || error.message);
@@ -78,19 +103,95 @@ const verifyPayment = async (req, res) => {
       }
     );
 
-    const { status, amount, customer } = paystackRes.data.data;
+    const { status: paymentStatus, amount, currency } = paystackRes.data.data;
 
     const transaction = await Transaction.findOneAndUpdate(
       { paystackReference: reference },
-      { status: status === "success" ? "success" : "failed" },
+      { status: paymentStatus === "success" ? "success" : "failed" },
       { new: true }
     );
 
-    return res.status(200).json({
-      message: "Payment verified",
-      transaction,
-      paystackData: { status, amount, customer },
-    });
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found." });
+    }
+
+    if (transaction.expectedAmount * 100 !== amount || currency !== "NGN") {
+      return res.status(400).json({ message: "Payment details mismatch." });
+    }
+
+    if (paymentStatus === "success") {
+      const event = await Event.findOne({ slug: transaction.eventId });
+
+      if (!event) {
+        return res
+          .status(404)
+          .json({ message: "Event for this transaction was not found." });
+      }
+
+      const qrToken = crypto.randomBytes(24).toString("hex");
+
+      const newTicket = new Ticket({
+        ticketId: `TCK-${Date.now()}-${transaction._id}`,
+        event: event._id,
+        buyerName: transaction.userName,
+        buyerEmail: transaction.userEmail,
+        ticketType: transaction.ticketType,
+        pricePaid: transaction.amount,
+        paymentRef: transaction.paystackReference,
+        qrToken,
+        qrSignature: signQrToken(qrToken),
+      });
+
+      await newTicket.save();
+
+      await Event.updateOne(
+        { slug: transaction.eventId, "tickets.type": transaction.ticketType },
+        { $inc: { "tickets.$.sold": 1 } }
+      );
+
+      const settings = await getOrCreateSettings();
+      let platformFee = 0;
+      if (settings.feeType === "percentage") {
+        platformFee = transaction.amount * (settings.percentageValue / 100);
+      } else if (settings.feeType === "flat") {
+        platformFee = settings.flatValue;
+      } else {
+        platformFee =
+          transaction.amount * (settings.percentageValue / 100) +
+          settings.flatValue;
+      }
+      transaction.splitDetails = {
+        organizerAmount: transaction.amount - platformFee,
+        platformFee,
+      };
+      await transaction.save();
+
+      try {
+        const qrImage = await QRCode.toDataURL(qrToken);
+        await sendTicketEmail({
+          to: newTicket.buyerEmail,
+          buyerName: newTicket.buyerName,
+          eventTitle: event.title,
+          eventDate: event.date,
+          eventStartTime: event.startTime,
+          eventLocation: event.location,
+          ticketType: newTicket.ticketType,
+          ticketId: newTicket.ticketId,
+          pricePaid: newTicket.pricePaid,
+          qrImage,
+        });
+      } catch (emailError) {
+        console.error("Failed to send ticket email:", emailError.message);
+      }
+
+      return res.status(200).json({
+        message: "Payment verified & ticket generated",
+        transaction,
+        ticket: newTicket,
+      });
+    }
+
+    return res.status(400).json({ message: "Payment failed." });
   } catch (error) {
     console.error(error.response?.data || error.message);
     return res.status(500).json({ message: "Payment verification failed." });

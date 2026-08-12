@@ -3,13 +3,30 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Customer = require("../models/customer");
 const Organizer = require("../models/organizer");
+const Event = require("../models/events");
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const Signup = async (req, res) => {
   try {
     const { fullname, email, password, phoneNumber } = req.body;
-    if (!fullname || !email || !password) {
+    if (!fullname || !email || !password || !phoneNumber) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid email address" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters",
+      });
     }
 
     const existingUser = await User.findOne({ email });
@@ -69,6 +86,12 @@ const Login = async (req, res) => {
         .json({ success: false, message: "All fields are required" });
     }
 
+    if (!EMAIL_REGEX.test(email)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid credentials" });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
       return res
@@ -88,6 +111,9 @@ const Login = async (req, res) => {
       expiresIn: "2d",
     });
 
+    const organizerRecord = await Organizer.findOne({ user: user._id });
+    const hasEvents = await Event.exists({ organizer: user._id });
+
     return res.status(200).json({
       success: true,
       accessToken,
@@ -97,6 +123,8 @@ const Login = async (req, res) => {
         email: user.email,
         role: user.role,
         number: user.number,
+        isOrganizer: !!organizerRecord,
+        hasEvents: !!hasEvents,
       },
     });
   } catch (error) {

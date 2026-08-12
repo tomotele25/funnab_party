@@ -2,8 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from "axios";
 
-const BACKENDURL = "https://funnabparty-backend.vercel.app/";
-// : "http://localhost:2005";
+const BACKENDURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 export const options: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -35,6 +34,8 @@ export const options: NextAuthOptions = {
               email: user.email,
               fullname: user.fullname,
               role: user.role,
+              isOrganizer: !!user.isOrganizer,
+              hasEvents: !!user.hasEvents,
               accessToken,
             };
           }
@@ -56,6 +57,8 @@ export const options: NextAuthOptions = {
         token.id = user.id;
         token.fullname = user.fullname;
         token.role = user.role;
+        token.isOrganizer = user.isOrganizer;
+        token.hasEvents = user.hasEvents;
         token.accessToken = user.accessToken;
       }
       return token;
@@ -66,6 +69,8 @@ export const options: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.fullname = token.fullname as string;
         session.user.role = token.role as string;
+        session.user.isOrganizer = token.isOrganizer as boolean;
+        session.user.hasEvents = token.hasEvents as boolean;
         session.user.accessToken = token.accessToken as string;
       }
       return session;

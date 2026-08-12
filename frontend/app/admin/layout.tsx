@@ -1,26 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
-import { Calendar, Ticket, Settings, LogOut, Menu } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import crownLogo from "../../public/crown-icon.png";
+import {
+  LayoutDashboard,
+  Calendar,
+  Users,
+  Receipt,
+  Settings,
+  LogOut,
+  Menu,
+} from "lucide-react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session || session.user?.role !== "admin") {
+      router.push("/login");
+    }
+  }, [session, status, router]);
 
   const navLinks = [
+    { name: "Dashboard", href: "/admin", icon: <LayoutDashboard size={18} /> },
+    { name: "Events", href: "/admin/events", icon: <Calendar size={18} /> },
+    { name: "Organizers", href: "/admin/organizers", icon: <Users size={18} /> },
     {
-      name: "Dashboard",
-      href: "/organizer/dashboard",
+      name: "Transactions",
+      href: "/admin/transactions",
+      icon: <Receipt size={18} />,
     },
-    { name: "Events", href: "/organizer/events", icon: <Calendar size={18} /> },
-    { name: "Tickets", href: "/organizer/tickets", icon: <Ticket size={18} /> },
-    {
-      name: "Settings",
-      href: "/organizer/settings",
-      icon: <Settings size={18} />,
-    },
+    { name: "Settings", href: "/admin/settings", icon: <Settings size={18} /> },
   ];
+
+  if (status === "loading" || !session || session.user?.role !== "admin") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-500">
+        Checking access...
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -33,12 +59,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       >
         <div className="flex flex-col h-full justify-between">
           <div>
-            {/* Header / Brand */}
-            <div className="p-4 border-b">
-              <h1 className="text-xl font-bold text-black">Admin</h1>
+            <div className="p-4 border-b flex items-center gap-2">
+              <div className="w-8 h-8 relative border border-pink-200 rounded-full bg-white p-1">
+                <Image
+                  src={crownLogo}
+                  alt="Funaab Party crown logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <h1 className="text-lg font-bold text-black">Admin</h1>
             </div>
 
-            {/* Navigation */}
             <nav className="p-4">
               <ul className="space-y-2">
                 {navLinks.map((link) => (
@@ -56,7 +88,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </nav>
           </div>
 
-          {/* Logout button */}
           <div className="p-4 border-t">
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
@@ -71,9 +102,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Main content */}
       <div className="flex-1 md:ml-52">
-        {/* Top bar for mobile */}
         <header className="flex items-center justify-between bg-white p-3 shadow md:hidden">
-          <h2 className="text-lg font-bold">Organizer</h2>
+          <h2 className="text-lg font-bold">Admin</h2>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 rounded-md border border-gray-300"

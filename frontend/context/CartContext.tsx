@@ -11,6 +11,7 @@ export interface CartItem {
   image?: string;
   eventId?: string; // optional, but can be used
   organizer?: string; // optional, but can be used
+  ticketType?: string;
 }
 
 interface CartContextType {

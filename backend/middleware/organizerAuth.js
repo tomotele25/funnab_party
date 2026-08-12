@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const Organizer = require("../models/organizer");
 
 const organizerOnly = async (req, res, next) => {
   try {
@@ -14,7 +15,8 @@ const organizerOnly = async (req, res, next) => {
     const user = await User.findById(decoded.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (user.role !== "organizer") {
+    const organizerRecord = await Organizer.findOne({ user: user._id });
+    if (!organizerRecord) {
       return res
         .status(403)
         .json({ message: "Access denied. Organizers only." });

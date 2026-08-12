@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import axios from "axios";
 import Loader from "@/component/Loader";
+import AuthBrandPanel from "@/component/AuthBrandPanel";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -16,13 +17,11 @@ export default function Login() {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (session?.user?.role) {
-      const role = session.user.role;
-      if (role === "customer") router.push("/");
-      else if (role === "organizer") router.push("/organizer");
-      else if (role === "agent") router.push("/agent");
-      else router.push("/admin");
-    }
+    if (!session?.user) return;
+
+    if (session.user.role === "admin") router.push("/admin");
+    else if (session.user.hasEvents) router.push("/organizer");
+    else router.push("/customer");
   }, [status, session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,7 +58,10 @@ export default function Login() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
+      <AuthBrandPanel />
+
+      <div className="flex justify-center items-center bg-gray-50 p-6">
       <div className="w-full max-w-sm bg-white text-black shadow-lg rounded-xl p-8">
         <h1 className="text-2xl font-semibold text-center mb-6">Sign In</h1>
 
@@ -103,7 +105,7 @@ export default function Login() {
             type="submit"
             className="w-full bg-black text-white py-2 rounded-lg font-medium hover:bg-gray-900 transition"
           >
-            {loading ? <Loader /> : "Sign Up"}
+            {loading ? <Loader /> : "Sign In"}
           </button>
         </form>
 
@@ -133,6 +135,7 @@ export default function Login() {
             Sign up
           </Link>
         </p>
+      </div>
       </div>
     </div>
   );

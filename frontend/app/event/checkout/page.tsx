@@ -4,13 +4,22 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, ShoppingCart, User, Mail } from "lucide-react";
+import {
+  ArrowLeft,
+  ShoppingCart,
+  User,
+  Mail,
+  Minus,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import Loader from "@/component/Loader";
-const BACKENDURL = "https://funnabparty-backend.vercel.app";
+const BACKENDURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function CheckoutPage() {
-  const { cart, removeFromCart, totalPrice } = useCart();
+  const { cart, removeFromCart, updateQuantity, totalPrice } = useCart();
   const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "" });
   const [formErrors, setFormErrors] = useState({ name: "", email: "" });
@@ -44,12 +53,13 @@ export default function CheckoutPage() {
     if (!validateForm()) return;
 
     if (cart.length === 0) {
-      alert("Cart is empty");
+      toast.error("Your cart is empty");
       return;
     }
 
     const payload = {
       email: formData.email,
+      userName: formData.name,
       amount: totalPrice,
       items: cart.map((item) => ({
         id: item.id,
@@ -58,6 +68,7 @@ export default function CheckoutPage() {
         quantity: item.quantity,
         eventId: item.eventId,
         organizer: item.organizer,
+        ticketType: item.ticketType,
       })),
     };
 
@@ -72,7 +83,7 @@ export default function CheckoutPage() {
       router.push(response.data.authorization_url);
     } catch (err: unknown) {
       console.error("Payment error:", err);
-      alert("Payment initiation failed. Please try again.");
+      toast.error("Payment initiation failed. Please try again.");
     } finally {
       setIsProcessingPayment(false);
     }
@@ -155,22 +166,47 @@ export default function CheckoutPage() {
                         {item.name}
                       </p>
                       <p className="text-gray-300 text-sm">
-                        {item.quantity} × ₦{item.price.toLocaleString()}
-                      </p>
-                      <p className="text-gray-400 text-sm">
-                        Organizer: {item.organizer}
+                        ₦{item.price.toLocaleString()} each
                       </p>
                       <p className="text-xs text-cyan-400 mt-1 italic">
                         Ticket #{(index + 1).toString().padStart(4, "0")}
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="mt-4 sm:mt-0 px-3 py-1.5 bg-red-600 hover:bg-red-500 rounded-lg text-sm font-medium text-white transition-all duration-300 w-full sm:w-auto shadow-md hover:shadow-lg"
-                  >
-                    Remove
-                  </button>
+
+                  <div className="flex items-center gap-3 mt-4 sm:mt-0 w-full sm:w-auto justify-between sm:justify-end">
+                    <div className="flex items-center border border-gray-600/50 rounded-lg overflow-hidden">
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        aria-label="Decrease quantity"
+                        className="px-2.5 py-1.5 bg-gray-800 hover:bg-gray-700 text-white transition"
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="px-3 py-1.5 text-sm text-white min-w-[2rem] text-center">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        aria-label="Increase quantity"
+                        className="px-2.5 py-1.5 bg-gray-800 hover:bg-gray-700 text-white transition"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <span className="font-semibold text-pink-400 text-sm min-w-[4.5rem] text-right">
+                      ₦{(item.price * item.quantity).toLocaleString()}
+                    </span>
+
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      aria-label="Remove ticket"
+                      className="p-2 bg-red-600/80 hover:bg-red-500 rounded-lg text-white transition-all duration-300 shadow-md hover:shadow-lg"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </li>
             ))}

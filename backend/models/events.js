@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
+
 const ticketSchema = new mongoose.Schema({
   type: {
     type: String,
@@ -20,6 +21,10 @@ const ticketSchema = new mongoose.Schema({
   deadline: {
     type: Date,
   },
+  available: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const eventSchema = new mongoose.Schema(
@@ -28,7 +33,10 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    slug: { type: String, unique: true },
+    slug: {
+      type: String,
+      unique: true,
+    },
     details: {
       type: String,
       required: true,
@@ -43,6 +51,10 @@ const eventSchema = new mongoose.Schema(
     },
     date: {
       type: Date,
+      required: true,
+    },
+    startTime: {
+      type: String,
       required: true,
     },
     organizer: {
@@ -63,9 +75,16 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    status: {
+      type: String,
+      enum: ["draft", "published", "cancelled", "completed"],
+      default: "published",
+    },
   },
   { timestamps: true }
 );
+
+eventSchema.index({ date: 1, status: 1 });
 
 eventSchema.pre("save", function (next) {
   if (!this.isModified("title")) return next();

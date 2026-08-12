@@ -4,15 +4,14 @@ const getUpcomingEvent = async (req, res) => {
   try {
     const now = new Date();
 
-    const events = await Event.find({ date: { $gte: now } })
-      .select("slug title location date image details tickets organizer ")
-      .sort({ date: 1 });
+    const events = await Event.find({ date: { $gte: now }, status: "published" })
+      .select(
+        "slug title location startTime date image details tickets organizer"
+      )
+      .sort({ date: 1 })
+      .limit(20);
 
-    if (!events || events.length === 0) {
-      return res.status(404).json({ message: "No upcoming events found." });
-    }
-
-    res.status(200).json({ events });
+    res.status(200).json({ events: events || [] });
   } catch (error) {
     console.error("Error fetching upcoming events:", error);
     res.status(500).json({ message: "Server error" });
@@ -40,15 +39,16 @@ const getTodaysEvents = async (req, res) => {
 
     const events = await Event.find({
       date: { $gte: startOfDay, $lte: endOfDay },
+      status: "published",
     })
-      .select("slug title location date details image tickets organizer ")
-      .sort({ date: 1 });
+      .select(
+        "slug title location date startTime details image tickets organizer"
+      )
+      .sort({ date: 1 })
+      .limit(20);
 
-    if (!events || events.length === 0) {
-      return res.status(404).json({ message: "No events today." });
-    }
-
-    res.status(200).json({ events });
+    // ✅ Always return an array (never 404)
+    res.status(200).json({ events: events || [] });
   } catch (error) {
     console.error("Error fetching today's events:", error);
     res.status(500).json({ message: "Server error" });
@@ -59,7 +59,7 @@ const getEventBySlug = async (req, res) => {
   const { slug } = req.params;
 
   try {
-    const event = await Event.findOne({ slug });
+    const event = await Event.findOne({ slug, status: "published" });
 
     if (!event) {
       return res.status(404).json({ message: "Event not found" });

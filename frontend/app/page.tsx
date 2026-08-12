@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -10,34 +10,20 @@ import {
   Crown,
   Camera,
   Mic2,
+  Search,
 } from "lucide-react";
 import Navbar from "@/component/Navbar";
 import Footer from "@/component/Footer";
+import EventCard, { EventCardData } from "@/component/EventCard";
 import axios from "axios";
 
 // Constants
-const images = ["/Hero (1).jpg", "/Hero (2).jpg", "/Hero (4).jpg"];
+const images = ["/28569778881858678.jpeg"];
 const texts = ["Explore parties", "Book · SECURE · FAST", "Join the fun"];
-const BACKENDURL = "https://funnabparty-backend.vercel.app";
 
-// Interfaces
-interface Ticket {
-  type: string;
-  price: number;
-  quantity: number;
-  sold: number;
-}
+const BACKENDURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-interface Event {
-  _id: string;
-  slug: string;
-  title: string;
-  details: string;
-  location: string;
-  image: string;
-  date: string;
-  tickets: Ticket[];
-}
+type Event = EventCardData;
 
 // Example fallback today event (can be removed if fetching always)
 const todayEvent: Event = {
@@ -53,6 +39,7 @@ const todayEvent: Event = {
     { type: "General Admission", price: 5000, quantity: 100, sold: 20 },
     { type: "VIP", price: 10000, quantity: 20, sold: 5 },
   ],
+  startTime: "No time",
 };
 
 // Features
@@ -122,77 +109,6 @@ const DiscoBall = ({
   />
 );
 
-// Event card
-const EventCard = ({ event }: { event?: Event }) => {
-  if (!event) return null;
-
-  const formattedDate = new Intl.DateTimeFormat("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(event.date));
-
-  return (
-    <Link
-      href={`/event/${event.slug}`}
-      aria-label={`View details for ${event.title}`}
-      role="article"
-    >
-      <div className="relative rounded-xl overflow-hidden bg-white/3 border border-gray-700/50 backdrop-blur-xl transition-all duration-300 hover:scale-102 hover:border-pink-400/50 hover:shadow-[0_0_10px_rgba(255,0,128,0.3)] glow-effect group">
-        {/* Event Image */}
-        <div className="relative">
-          <Image
-            src={event.image}
-            alt={event.title}
-            width={500}
-            height={300}
-            className="object-cover w-full h-48 md:h-56"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-        </div>
-
-        {/* Event Info */}
-        <div className="p-6 text-center bg-black/20 space-y-3 md:space-y-4">
-          <h3 className="text-white font-bold text-lg md:text-2xl tracking-tight">
-            {event.title}
-          </h3>
-          <h4 className="text-cyan-300 font-bold text-sm md:text-base tracking-tight">
-            {event.location}
-          </h4>
-
-          {/* Make details more prominent */}
-          <p className="text-gray-100 text-sm md:text-base max-h-36 overflow-y-auto break-words">
-            {event.details}
-          </p>
-
-          <time
-            dateTime={event.date}
-            className="inline-flex text-purple-300 font-semibold text-sm md:text-base tracking-tight bg-purple-500/5 rounded px-2 py-1"
-          >
-            {formattedDate}
-          </time>
-
-          {/* Action Buttons */}
-          <div className="flex justify-center gap-4 items-center flex-wrap">
-            <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-pink-400 to-cyan-400 text-white text-xs md:text-sm rounded-full font-semibold animate-pulse">
-              Party
-            </span>
-            <button className="px-4 py-2 bg-transparent border border-pink-400 text-pink-400 font-semibold rounded-lg hover:bg-pink-400/20 hover:text-white transition-all duration-300 glow-button">
-              Get Tickets
-            </button>
-          </div>
-        </div>
-
-        {/* Hover effect */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,0,128,0.1),transparent)] opacity-0 group-hover:opacity-50 transition-opacity duration-300" />
-      </div>
-    </Link>
-  );
-};
-
 export default function Home() {
   const [currentImage, setCurrentImage] = useState(0);
   const [currentText, setCurrentText] = useState("");
@@ -200,6 +116,7 @@ export default function Home() {
   const [charIndex, setCharIndex] = useState(0);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [todaysEventList, setTodaysEventList] = useState<Event[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Hero carousel
   useEffect(() => {
@@ -248,6 +165,32 @@ export default function Home() {
     fetchTodaysEvents();
   }, []);
 
+  const allEvents = useMemo(() => {
+    const map = new Map<string, Event>();
+    [...todaysEventList, ...upcomingEvents].forEach((ev) => map.set(ev._id, ev));
+    return Array.from(map.values());
+  }, [todaysEventList, upcomingEvents]);
+
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return [];
+    return allEvents.filter(
+      (ev) =>
+        ev.title.toLowerCase().includes(query) ||
+        ev.location.toLowerCase().includes(query)
+    );
+  }, [allEvents, searchQuery]);
+
+  const featuredEvents = useMemo(() => {
+    return [...allEvents]
+      .sort((a, b) => {
+        const soldA = a.tickets.reduce((s, t) => s + t.sold, 0);
+        const soldB = b.tickets.reduce((s, t) => s + t.sold, 0);
+        return soldB - soldA;
+      })
+      .slice(0, 3);
+  }, [allEvents]);
+
   return (
     <div className="bg-black text-white font-sans">
       <Navbar />
@@ -279,14 +222,62 @@ export default function Home() {
           <p className="text-base md:text-xl text-gray-300 mb-8">
             Get ready to dance and book your next party night!
           </p>
-          <Link href="/events">
-            <button className="px-8 py-3 bg-gradient-to-r from-white to-gray-100 text-black font-semibold rounded-lg hover:from-gray-100 hover:to-white transition-all duration-300 shadow-lg glow-button">
-              Hit the Dance Floor
-            </button>
-          </Link>
+
+          <div className="relative w-full max-w-md mb-2">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search events by name or location..."
+              className="w-full pl-11 pr-4 py-3 rounded-full bg-white/10 backdrop-blur-xl border border-gray-600/50 text-white placeholder-gray-400 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/40"
+            />
+          </div>
+
+          {!searchQuery && (
+            <Link href="/events">
+              <button className="mt-6 px-8 py-3 bg-gradient-to-r from-white to-gray-100 text-black font-semibold rounded-lg hover:from-gray-100 hover:to-white transition-all duration-300 shadow-lg glow-button">
+                Hit the Dance Floor
+              </button>
+            </Link>
+          )}
         </div>
       </div>
 
+      {/* Search Results */}
+      {searchQuery && (
+        <section className="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-20 bg-black">
+          <h2 className="text-xl md:text-2xl font-semibold mb-6 text-white">
+            {searchResults.length > 0
+              ? `Results for "${searchQuery}"`
+              : `No events found for "${searchQuery}"`}
+          </h2>
+          {searchResults.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {searchResults.map((event) => (
+                <EventCard key={event._id} event={event} />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Featured Section */}
+      {!searchQuery && featuredEvents.length > 0 && (
+        <section className="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-20 bg-black">
+          <h2 className="text-2xl md:text-3xl font-semibold mb-8 text-white">
+            🔥 Trending Now
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredEvents.map((event) => (
+              <EventCard key={event._id} event={event} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!searchQuery && (
+        <>
       {/* Today's Party Section */}
       <section className="relative max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-20 bg-gradient-to-b from-gray-900 to-black">
         <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center mb-8 bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-md">
@@ -331,6 +322,8 @@ export default function Home() {
           </div>
         )}
       </section>
+        </>
+      )}
 
       <Footer />
 

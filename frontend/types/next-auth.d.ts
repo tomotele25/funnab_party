@@ -6,6 +6,8 @@ declare module "next-auth" {
       id: string;
       fullname: string;
       role: string;
+      isOrganizer: boolean;
+      hasEvents: boolean;
       accessToken: string;
     } & DefaultSession["user"];
   }
@@ -13,6 +15,8 @@ declare module "next-auth" {
   interface User extends DefaultUser {
     fullname: string;
     role: string;
+    isOrganizer: boolean;
+    hasEvents: boolean;
     accessToken: string;
   }
 }
@@ -22,6 +26,8 @@ declare module "next-auth/jwt" {
     id: string;
     fullname: string;
     role: string;
+    isOrganizer: boolean;
+    hasEvents: boolean;
     accessToken: string;
   }
 }

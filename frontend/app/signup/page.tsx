@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import Loader from "@/component/Loader";
+import AuthBrandPanel from "@/component/AuthBrandPanel";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -13,8 +14,7 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
-  const BACKENDURL = "https://funnabparty-backend.vercel.app";
-  // : "http://localhost:2005";
+  const BACKENDURL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,14 +48,8 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
-      {/* LEFT IMAGE */}
-      <div className="hidden md:block h-full">
-        <img
-          src="https://images.unsplash.com/photo-1506765515384-028b60a970df?auto=format&fit=crop&w=1500&q=80"
-          alt="Signup Illustration"
-          className="w-full h-full object-cover"
-        />
-      </div>
+      {/* LEFT BRAND PANEL */}
+      <AuthBrandPanel />
 
       {/* RIGHT FORM */}
       <div className="flex justify-center items-center bg-gray-50 p-8 h-full">

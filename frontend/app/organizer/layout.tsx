@@ -1,27 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
-import { Calendar, Ticket, Settings, LogOut, Menu } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import crownLogo from "../../public/crown-icon.png";
+import {
+  LayoutDashboard,
+  Calendar,
+  BarChart3,
+  ScanLine,
+  UserCircle,
+  LogOut,
+  Menu,
+} from "lucide-react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session || !session.user?.isOrganizer) {
+      router.push("/login");
+    }
+  }, [session, status, router]);
 
   const navLinks = [
-    { name: "Dashboard", href: "/organizer/dashboard" },
+    {
+      name: "Dashboard",
+      href: "/organizer",
+      icon: <LayoutDashboard size={18} />,
+    },
     {
       name: "Events",
       href: "/organizer/manageEvents",
       icon: <Calendar size={18} />,
     },
-    { name: "Tickets", href: "/organizer/tickets", icon: <Ticket size={18} /> },
     {
-      name: "Settings",
-      href: "/organizer/settings",
-      icon: <Settings size={18} />,
+      name: "Analytics",
+      href: "/organizer/analytics",
+      icon: <BarChart3 size={18} />,
+    },
+    { name: "Scan", href: "/organizer/scan", icon: <ScanLine size={18} /> },
+    {
+      name: "Profile",
+      href: "/organizer/profile",
+      icon: <UserCircle size={18} />,
     },
   ];
+
+  if (status === "loading" || !session || !session.user?.isOrganizer) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-500">
+        Checking access...
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -35,8 +72,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col h-full justify-between">
           <div>
             {/* Brand */}
-            <div className="p-4 border-b">
-              <h1 className="text-xl font-bold text-black">Organizer</h1>
+            <div className="p-4 border-b flex items-center gap-2">
+              <div className="w-8 h-8 relative border border-pink-200 rounded-full bg-white p-1">
+                <Image
+                  src={crownLogo}
+                  alt="Funaab Party crown logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <h1 className="text-lg font-bold text-black">Organizer</h1>
             </div>
 
             {/* Navigation */}

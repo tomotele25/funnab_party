@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import logo from "../public/logo.jpg";
+import crownLogo from "../public/crown-icon.png";
 import { useSession } from "next-auth/react";
 
 export default function Navbar() {
@@ -27,17 +27,24 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
         <div className="flex justify-between h-18 items-center py-4">
           {/* Logo */}
-          <Link href="/" aria-label="Funaab Party Homepage">
-            <div className="w-24 h-12 relative border border-pink-500/50 rounded-md p-1 bg-white glow-logo">
+          <Link
+            href="/"
+            aria-label="Funaab Party Homepage"
+            className="flex items-center gap-2"
+          >
+            <div className="w-12 h-12 relative border border-pink-500/50 rounded-full bg-white glow-logo p-0.5">
               <Image
-                src={logo}
-                alt="Funaab Party Logo"
+                src={crownLogo}
+                alt="Funaab Party crown logo"
                 fill
-                className="object-cover"
+                className="object-contain"
                 priority
-                sizes="(max-width: 640px) 20vw, 24vw"
+                sizes="48px"
               />
             </div>
+            <span className="font-extrabold text-base sm:text-lg tracking-tight text-white">
+              FUNAAB<span className="text-pink-500">PARTY</span>
+            </span>
           </Link>
 
           {/* Desktop Menu */}

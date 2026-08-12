@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import logo from "../public/logo.jpg";
+import logo from "../public/2.png";
 import { Facebook, Instagram, Twitter } from "lucide-react";
 
 const Footer = () => {
@@ -15,8 +15,13 @@ const Footer = () => {
           {/* Logo & Description */}
           <div className="flex flex-col items-center md:items-start">
             {/* Logo with Neon Glow */}
-            <div className="w-32 h-16 relative mb-4 rounded-md p-1 bg-white/10 backdrop-blur-sm glow-effect">
-              <Image src={logo} alt="Logo" fill className="object-contain" />
+            <div className="w-36 h-36 relative mb-4 rounded-xl p-2 bg-white glow-effect">
+              <Image
+                src={logo}
+                alt="Funaab Party logo"
+                fill
+                className="object-contain"
+              />
             </div>
             <p className="text-center md:text-left text-gray-400 max-w-xs text-sm">
               Your ultimate party guide. Discover, book, and join the best
