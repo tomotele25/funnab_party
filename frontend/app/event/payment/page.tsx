@@ -83,7 +83,7 @@ function PaymentPageContent() {
 
           {state === "success" && ticket && (
             <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-green-500/30 text-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.15),transparent_70%)]" />
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.15),transparent_70%)]" />
 
               <div className="relative">
                 <CheckCircle2 className="w-16 h-16 mx-auto mb-4 text-green-400" />

@@ -21,8 +21,8 @@ export default function Navbar() {
   return (
     <nav className="bg-gradient-to-b from-black to-gray-900 text-white sticky top-0 z-50 shadow-[0_4px_10px_rgba(255,0,128,0.2)]">
       {/* Background Neon Effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,0,128,0.2),transparent)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(0,255,255,0.2),transparent)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,0,128,0.2),transparent)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(0,255,255,0.2),transparent)]" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
         <div className="flex justify-between h-18 items-center py-4">
@@ -111,7 +111,7 @@ export default function Navbar() {
         }`}
       >
         <div className="relative bg-gradient-to-b from-black/80 to-gray-900/80">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,0,128,0.2),transparent)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,0,128,0.2),transparent)]" />
           {menuItems.map((item) => (
             <Link
               key={item.href}
