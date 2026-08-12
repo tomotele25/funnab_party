@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import axios from "axios";
 import {
@@ -24,7 +24,7 @@ interface TicketInfo {
   buyerEmail: string;
 }
 
-export default function PaymentPage() {
+function PaymentPageContent() {
   const searchParams = useSearchParams();
   const reference = searchParams.get("reference");
   const [state, setState] = useState<VerifyState>("loading");
@@ -153,5 +153,19 @@ export default function PaymentPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-black text-white min-h-screen flex items-center justify-center">
+          <div className="w-12 h-12 border-4 border-t-transparent border-pink-400 rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <PaymentPageContent />
+    </Suspense>
   );
 }
