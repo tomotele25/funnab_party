@@ -4,6 +4,10 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const app = express();
+// Vercel sits in front of this app as a single reverse-proxy hop; trust it
+// (but only one hop) so express-rate-limit can read the real client IP from
+// X-Forwarded-For instead of erroring out.
+app.set("trust proxy", 1);
 const connectToDb = require("../db/db");
 const allowedOrigins = [
   "http://localhost:3000",
