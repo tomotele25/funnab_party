@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import crownLogo from "../../public/crown-icon.png";
 import {
@@ -21,6 +21,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (status === "loading") return;
@@ -28,6 +29,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       router.push("/login");
     }
   }, [session, status, router]);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
 
   const navLinks = [
     { name: "Dashboard", href: "/admin", icon: <LayoutDashboard size={18} /> },

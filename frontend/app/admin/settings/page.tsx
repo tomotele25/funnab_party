@@ -76,8 +76,8 @@ export default function AdminSettingsPage() {
         Service Fee Settings
       </h1>
       <p className="text-[var(--color-text-muted)] text-sm mb-6">
-        Configure the service fee charged to customers on top of the ticket
-        price at checkout. Organizers always receive the full ticket price.
+        Configure FUNAAB Party&apos;s commission — deducted from the
+        organizer&apos;s share of each ticket, not charged to the customer.
       </p>
 
       <div className="card-surface p-6 space-y-6">
@@ -148,10 +148,12 @@ export default function AdminSettingsPage() {
         <div className="flex gap-2 bg-[var(--color-warning)]/10 border border-[var(--color-warning)]/30 text-[var(--color-warning)] text-xs rounded-[var(--radius-card)] p-3">
           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <p>
-            This fee is added to the customer&apos;s total at checkout,
-            alongside a separate Paystack payment processing fee (1.5% +
-            ₦100, capped at ₦2,000). Changes apply to the next checkout —
-            in-progress carts keep the fee shown when they loaded.
+            This is deducted from the organizer&apos;s payout on each ticket
+            sale. The customer separately pays a fixed payment processing
+            fee (₦200 + 1.5% of the ticket price) at checkout, which passes
+            straight through to Paystack. Changes here apply to the next
+            sale — completed transactions keep the rate that was active
+            when they were paid.
           </p>
         </div>
 

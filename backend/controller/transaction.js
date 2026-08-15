@@ -7,7 +7,7 @@ const Ticket = require("../models/purchasedTicket");
 const Event = require("../models/events");
 const { sendTicketEmail } = require("../utils/mailer");
 const { getOrCreateSettings } = require("./admin-controller");
-const { calculateCheckoutTotals } = require("../utils/fees");
+const { calculateCheckoutTotals, calculateServiceFee } = require("../utils/fees");
 
 const signQrToken = (qrToken) =>
   crypto
@@ -82,7 +82,7 @@ const initializePayment = async (req, res) => {
     }
 
     const settings = await getOrCreateSettings();
-    const { serviceFee, gatewayFee, total } = calculateCheckoutTotals(
+    const { gatewayFee, total } = calculateCheckoutTotals(
       ticketSubtotal,
       settings
     );
@@ -111,7 +111,6 @@ const initializePayment = async (req, res) => {
 
     const firstTransaction = transactions[0];
     firstTransaction.ticketSubtotal = ticketSubtotal;
-    firstTransaction.serviceFee = serviceFee;
     firstTransaction.gatewayFee = gatewayFee;
     firstTransaction.expectedAmount = total;
     await firstTransaction.save();
@@ -206,12 +205,17 @@ const verifyPayment = async (req, res) => {
         { $inc: { "tickets.$.sold": 1 } }
       );
 
-      // Customer already paid the service fee and gateway fee on top of the
-      // ticket price at checkout, so the organizer keeps the full ticket
-      // amount — nothing is deducted from their side.
+      // The customer paid the gateway fee on top of the ticket price at
+      // checkout (Paystack's cost), but the platform's own commission
+      // (default 4.5%) comes out of the organizer's share of the ticket
+      // price — computed per line item so multi-item carts split correctly.
+      const settings = await getOrCreateSettings();
+      const platformFee = Math.round(
+        calculateServiceFee(transaction.amount, settings)
+      );
       transaction.splitDetails = {
-        organizerAmount: transaction.amount,
-        platformFee: transaction.serviceFee || 0,
+        organizerAmount: transaction.amount - platformFee,
+        platformFee,
         gatewayFee: transaction.gatewayFee || 0,
       };
       await transaction.save();

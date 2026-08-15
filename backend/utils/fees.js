@@ -1,11 +1,11 @@
-// Paystack Nigeria local-card pricing: 1.5% + ₦100 (waived under ₦2,500), capped at ₦2,000.
-const calculateGatewayFee = (amount) => {
-  if (amount <= 0) return 0;
-  let fee = amount * 0.015;
-  if (amount >= 2500) fee += 100;
-  return Math.min(Math.round(fee), 2000);
+// Payment gateway cost, charged to the customer on top of the ticket price: ₦200 + 1.5%.
+const calculateGatewayFee = (ticketSubtotal) => {
+  if (ticketSubtotal <= 0) return 0;
+  return Math.round(ticketSubtotal * 0.015) + 200;
 };
 
+// Platform's own commission — deducted from the organizer's payout, not
+// charged to the customer. Defaults to 4.5% (see PlatformSettings).
 const calculateServiceFee = (ticketSubtotal, settings) => {
   if (settings.feeType === "percentage") {
     return ticketSubtotal * (settings.percentageValue / 100);
@@ -18,13 +18,14 @@ const calculateServiceFee = (ticketSubtotal, settings) => {
   );
 };
 
-// Customer pays: ticket price + service fee (platform's cut) + gateway fee (Paystack's cut).
-// Organizer receives the full ticket price; nothing is deducted from their side.
+// Customer pays: ticket price + gateway fee only.
+// Organizer receives: ticket price - platform service fee.
 const calculateCheckoutTotals = (ticketSubtotal, settings) => {
   const serviceFee = Math.round(calculateServiceFee(ticketSubtotal, settings));
-  const gatewayFee = calculateGatewayFee(ticketSubtotal + serviceFee);
-  const total = ticketSubtotal + serviceFee + gatewayFee;
-  return { ticketSubtotal, serviceFee, gatewayFee, total };
+  const gatewayFee = calculateGatewayFee(ticketSubtotal);
+  const total = ticketSubtotal + gatewayFee;
+  const organizerAmount = ticketSubtotal - serviceFee;
+  return { ticketSubtotal, serviceFee, gatewayFee, total, organizerAmount };
 };
 
 module.exports = { calculateGatewayFee, calculateServiceFee, calculateCheckoutTotals };

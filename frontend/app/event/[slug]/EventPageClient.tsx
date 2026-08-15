@@ -235,8 +235,7 @@ const EventPageClient = ({ slug }: EventPageClientProps) => {
               {(selectedTicket.price * quantity).toLocaleString()}
             </p>
             <p className="mb-4 text-xs text-[var(--color-text-muted)]">
-              Service fee and payment processing fee are calculated at
-              checkout.
+              A payment processing fee is calculated at checkout.
             </p>
 
             <button

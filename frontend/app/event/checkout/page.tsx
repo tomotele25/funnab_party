@@ -21,7 +21,6 @@ const BACKENDURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 interface Quote {
   ticketSubtotal: number;
-  serviceFee: number;
   gatewayFee: number;
   total: number;
 }
@@ -391,14 +390,6 @@ export default function CheckoutPage() {
           <div className="flex items-center justify-between text-sm text-[var(--color-text-muted)]">
             <span>Ticket subtotal</span>
             <span>₦{(quote?.ticketSubtotal ?? totalPrice).toLocaleString()}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm text-[var(--color-text-muted)]">
-            <span>Service fee</span>
-            <span>
-              {quoteLoading
-                ? "..."
-                : `₦${(quote?.serviceFee ?? 0).toLocaleString()}`}
-            </span>
           </div>
           <div className="flex items-center justify-between text-sm text-[var(--color-text-muted)]">
             <span>Payment processing fee</span>

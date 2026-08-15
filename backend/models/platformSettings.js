@@ -9,7 +9,7 @@ const platformSettingsSchema = new mongoose.Schema(
     },
     percentageValue: {
       type: Number,
-      default: 10,
+      default: 4.5,
     },
     flatValue: {
       type: Number,
