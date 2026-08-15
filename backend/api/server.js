@@ -9,6 +9,8 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://192.168.100.25:3000",
   "https://funnabparty.vercel.app",
+  "https://funaabparty.com",
+  "https://www.funaabparty.com",
 ];
 
 const authLimiter = rateLimit({
