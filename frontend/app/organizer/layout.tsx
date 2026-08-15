@@ -14,6 +14,7 @@ import {
   UserCircle,
   LogOut,
   Menu,
+  Wallet,
 } from "lucide-react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -50,6 +51,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       icon: <BarChart3 size={18} />,
     },
     { name: "Scan", href: "/organizer/scan", icon: <ScanLine size={18} /> },
+    { name: "Wallet", href: "/organizer/wallet", icon: <Wallet size={18} /> },
     {
       name: "Profile",
       href: "/organizer/profile",
