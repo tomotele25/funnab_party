@@ -27,6 +27,21 @@ const ticketSchema = new mongoose.Schema({
   },
 });
 
+const customFieldSchema = new mongoose.Schema(
+  {
+    label: { type: String, required: true },
+    type: {
+      type: String,
+      enum: ["text", "email", "phone", "number", "textarea", "checkbox"],
+      default: "text",
+    },
+    required: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
+const EVENT_THEMES = ["classic", "midnight", "sunset", "mono"];
+
 const eventSchema = new mongoose.Schema(
   {
     title: {
@@ -37,9 +52,27 @@ const eventSchema = new mongoose.Schema(
       type: String,
       unique: true,
     },
+    customSlug: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     details: {
       type: String,
       required: true,
+    },
+    theme: {
+      type: String,
+      enum: EVENT_THEMES,
+      default: "classic",
+    },
+    customFields: {
+      type: [customFieldSchema],
+      default: [],
+    },
+    confirmationEmail: {
+      subject: { type: String, default: "" },
+      body: { type: String, default: "" },
     },
     location: {
       type: String,
@@ -87,9 +120,16 @@ const eventSchema = new mongoose.Schema(
 eventSchema.index({ date: 1, status: 1 });
 
 eventSchema.pre("save", function (next) {
-  if (!this.isModified("title")) return next();
-  this.slug = slugify(this.title, { lower: true, strict: true });
+  if (this.isModified("title") || !this.slug) {
+    this.slug = slugify(this.title, { lower: true, strict: true });
+  }
+  if (this.isModified("customSlug")) {
+    this.customSlug = this.customSlug
+      ? slugify(this.customSlug, { lower: true, strict: true })
+      : undefined;
+  }
   next();
 });
 
 module.exports = mongoose.model("Event", eventSchema);
+module.exports.EVENT_THEMES = EVENT_THEMES;

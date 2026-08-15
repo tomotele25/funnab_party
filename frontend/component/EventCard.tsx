@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { optimizedImage } from "@/lib/cloudinaryUrl";
+import { getEventThemeStyle } from "@/lib/eventThemes";
 
 interface TicketTier {
   type: string;
@@ -14,6 +15,7 @@ interface TicketTier {
 export interface EventCardData {
   _id: string;
   slug: string;
+  customSlug?: string;
   title: string;
   details: string;
   location: string;
@@ -21,6 +23,7 @@ export interface EventCardData {
   date: string;
   tickets: TicketTier[];
   startTime: string;
+  theme?: string;
 }
 
 const EventCard = ({ event }: { event?: EventCardData }) => {
@@ -48,10 +51,11 @@ const EventCard = ({ event }: { event?: EventCardData }) => {
 
   return (
     <Link
-      href={`/event/${event.slug}`}
+      href={`/event/${event.customSlug || event.slug}`}
       aria-label={`View details for ${event.title}`}
       role="article"
       className="group block h-full"
+      style={getEventThemeStyle(event.theme)}
     >
       <div className="card-surface flex h-full flex-col overflow-hidden transition-all duration-300 ease-[var(--ease-standard)] hover:-translate-y-1 hover:border-[var(--color-primary)]/50 hover:shadow-[var(--shadow-glow-primary)]">
         <div className="relative overflow-hidden">

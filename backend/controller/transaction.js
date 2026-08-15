@@ -7,6 +7,7 @@ const Ticket = require("../models/purchasedTicket");
 const Event = require("../models/events");
 const { sendTicketEmail } = require("../utils/mailer");
 const { getOrCreateSettings } = require("./admin-controller");
+const { calculateCheckoutTotals } = require("../utils/fees");
 
 const signQrToken = (qrToken) =>
   crypto
@@ -16,14 +17,50 @@ const signQrToken = (qrToken) =>
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const formatEventDate = (date) =>
+  date
+    ? new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }).format(new Date(date))
+    : "";
+
+const getPaymentQuote = async (req, res) => {
+  try {
+    const { items } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: "Missing required fields." });
+    }
+
+    const ticketSubtotal = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    if (ticketSubtotal <= 0) {
+      return res.status(400).json({ message: "Invalid ticket subtotal." });
+    }
+
+    const settings = await getOrCreateSettings();
+    const quote = calculateCheckoutTotals(ticketSubtotal, settings);
+
+    return res.status(200).json({ quote });
+  } catch (error) {
+    console.error(error.response?.data || error.message);
+    return res.status(500).json({ message: "Failed to calculate quote." });
+  }
+};
+
 const initializePayment = async (req, res) => {
   try {
-    const { email, amount, items, userName, accountNo } = req.body;
+    const { email, items, userName, accountNo, customFieldResponses } = req.body;
 
     if (
       !email ||
       !userName ||
-      !amount ||
       !items ||
       !Array.isArray(items) ||
       items.length === 0
@@ -35,9 +72,20 @@ const initializePayment = async (req, res) => {
       return res.status(400).json({ message: "Invalid email address." });
     }
 
-    if (typeof amount !== "number" || amount <= 0) {
-      return res.status(400).json({ message: "Invalid amount." });
+    const ticketSubtotal = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+
+    if (ticketSubtotal <= 0) {
+      return res.status(400).json({ message: "Invalid ticket subtotal." });
     }
+
+    const settings = await getOrCreateSettings();
+    const { serviceFee, gatewayFee, total } = calculateCheckoutTotals(
+      ticketSubtotal,
+      settings
+    );
 
     const transactions = await Promise.all(
       items.map((item) => {
@@ -54,17 +102,25 @@ const initializePayment = async (req, res) => {
           userName,
           userEmail: email,
           paystackReference: `TRX-${Date.now()}-${item.eventId}`,
+          customFieldResponses: Array.isArray(customFieldResponses)
+            ? customFieldResponses
+            : [],
         });
       })
     );
 
     const firstTransaction = transactions[0];
+    firstTransaction.ticketSubtotal = ticketSubtotal;
+    firstTransaction.serviceFee = serviceFee;
+    firstTransaction.gatewayFee = gatewayFee;
+    firstTransaction.expectedAmount = total;
+    await firstTransaction.save();
 
     const paystackRes = await axios.post(
       "https://api.paystack.co/transaction/initialize",
       {
         email,
-        amount: amount * 100,
+        amount: total * 100,
         reference: firstTransaction.paystackReference,
         callback_url: "http://localhost:3000/event/payment",
       },
@@ -140,6 +196,7 @@ const verifyPayment = async (req, res) => {
         paymentRef: transaction.paystackReference,
         qrToken,
         qrSignature: signQrToken(qrToken),
+        customFieldResponses: transaction.customFieldResponses || [],
       });
 
       await newTicket.save();
@@ -149,25 +206,40 @@ const verifyPayment = async (req, res) => {
         { $inc: { "tickets.$.sold": 1 } }
       );
 
-      const settings = await getOrCreateSettings();
-      let platformFee = 0;
-      if (settings.feeType === "percentage") {
-        platformFee = transaction.amount * (settings.percentageValue / 100);
-      } else if (settings.feeType === "flat") {
-        platformFee = settings.flatValue;
-      } else {
-        platformFee =
-          transaction.amount * (settings.percentageValue / 100) +
-          settings.flatValue;
-      }
+      // Customer already paid the service fee and gateway fee on top of the
+      // ticket price at checkout, so the organizer keeps the full ticket
+      // amount — nothing is deducted from their side.
       transaction.splitDetails = {
-        organizerAmount: transaction.amount - platformFee,
-        platformFee,
+        organizerAmount: transaction.amount,
+        platformFee: transaction.serviceFee || 0,
+        gatewayFee: transaction.gatewayFee || 0,
       };
       await transaction.save();
 
       try {
         const qrImage = await QRCode.toDataURL(qrToken);
+
+        const placeholders = {
+          "{{buyerName}}": newTicket.buyerName,
+          "{{eventTitle}}": event.title,
+          "{{eventDate}}": formatEventDate(event.date),
+          "{{eventLocation}}": event.location,
+          "{{ticketType}}": newTicket.ticketType,
+          "{{ticketId}}": newTicket.ticketId,
+        };
+        const applyPlaceholders = (str) =>
+          Object.entries(placeholders).reduce(
+            (acc, [key, value]) => acc.split(key).join(value || ""),
+            str
+          );
+
+        const customSubject = event.confirmationEmail?.subject
+          ? applyPlaceholders(event.confirmationEmail.subject)
+          : undefined;
+        const customMessage = event.confirmationEmail?.body
+          ? applyPlaceholders(event.confirmationEmail.body)
+          : undefined;
+
         await sendTicketEmail({
           to: newTicket.buyerEmail,
           buyerName: newTicket.buyerName,
@@ -179,6 +251,8 @@ const verifyPayment = async (req, res) => {
           ticketId: newTicket.ticketId,
           pricePaid: newTicket.pricePaid,
           qrImage,
+          customSubject,
+          customMessage,
         });
       } catch (emailError) {
         console.error("Failed to send ticket email:", emailError.message);
@@ -199,6 +273,7 @@ const verifyPayment = async (req, res) => {
 };
 
 module.exports = {
+  getPaymentQuote,
   initializePayment,
   verifyPayment,
 };

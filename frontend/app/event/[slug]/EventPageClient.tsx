@@ -16,6 +16,7 @@ import {
 import SkeletonLoader from "@/component/SkeletonLoader";
 import { useCart } from "@/context/CartContext";
 import { optimizedImage } from "@/lib/cloudinaryUrl";
+import { getEventThemeStyle } from "@/lib/eventThemes";
 
 interface Ticket {
   type: string;
@@ -33,6 +34,7 @@ interface Event {
   date: string;
   tickets: Ticket[];
   organizer: string;
+  theme?: string;
 }
 
 interface EventPageClientProps {
@@ -119,7 +121,10 @@ const EventPageClient = ({ slug }: EventPageClientProps) => {
   }).format(new Date(event.date));
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] font-sans text-[var(--color-text)]">
+    <div
+      className="min-h-screen bg-[var(--color-bg)] font-sans text-[var(--color-text)]"
+      style={getEventThemeStyle(event.theme)}
+    >
       <section className="relative mx-auto px-4 py-1 pb-24 sm:px-6 lg:px-8">
         <button
           onClick={() => router.back()}
@@ -225,9 +230,13 @@ const EventPageClient = ({ slug }: EventPageClientProps) => {
             <p className="mb-2 text-[var(--color-text)]/90">
               <strong>Quantity:</strong> {quantity}
             </p>
-            <p className="mb-4 text-[var(--color-text)]/90">
-              <strong>Total:</strong> ₦
+            <p className="mb-1 text-[var(--color-text)]/90">
+              <strong>Ticket subtotal:</strong> ₦
               {(selectedTicket.price * quantity).toLocaleString()}
+            </p>
+            <p className="mb-4 text-xs text-[var(--color-text-muted)]">
+              Service fee and payment processing fee are calculated at
+              checkout.
             </p>
 
             <button

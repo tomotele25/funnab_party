@@ -35,6 +35,11 @@ const createEvent = async (req, res) => {
       accountNumber,
       bankName,
       status,
+      customSlug,
+      theme,
+      customFields,
+      confirmationSubject,
+      confirmationBody,
     } = req.body;
 
     if (
@@ -75,6 +80,28 @@ const createEvent = async (req, res) => {
 
     const imageUrl = req.file?.path || req.body.image;
 
+    let customFieldsArray = [];
+    if (customFields) {
+      const parsedCustomFields =
+        typeof customFields === "string" ? JSON.parse(customFields) : customFields;
+      customFieldsArray = parsedCustomFields
+        .filter((f) => f.label && f.label.trim())
+        .map((f) => ({
+          label: f.label.trim(),
+          type: f.type || "text",
+          required: Boolean(f.required),
+        }));
+    }
+
+    if (customSlug !== undefined && customSlug !== "") {
+      const existing = await Event.findOne({ customSlug: customSlug.toLowerCase().trim() });
+      if (existing) {
+        return res
+          .status(400)
+          .json({ success: false, message: "That custom event link is already taken." });
+      }
+    }
+
     const settings = await getOrCreateSettings();
 
     const paystackRes = await axios.post(
@@ -105,6 +132,13 @@ const createEvent = async (req, res) => {
       bankName,
       subaccountId,
       status: status === "draft" ? "draft" : "published",
+      customSlug: customSlug ? customSlug.toLowerCase().trim() : undefined,
+      theme: theme || "classic",
+      customFields: customFieldsArray,
+      confirmationEmail: {
+        subject: confirmationSubject || "",
+        body: confirmationBody || "",
+      },
     });
 
     await newEvent.save();

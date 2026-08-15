@@ -78,7 +78,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   src={crownLogo}
                   alt="Funaab Party crown logo"
                   fill
-                  className="object-contain"
+                  className="object-contain grayscale"
                 />
               </div>
               <h1

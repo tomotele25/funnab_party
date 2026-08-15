@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -19,12 +19,92 @@ import toast from "react-hot-toast";
 import Loader from "@/component/Loader";
 const BACKENDURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
+interface Quote {
+  ticketSubtotal: number;
+  serviceFee: number;
+  gatewayFee: number;
+  total: number;
+}
+
+interface CustomField {
+  label: string;
+  type: "text" | "email" | "phone" | "number" | "textarea" | "checkbox";
+  required: boolean;
+}
+
 export default function CheckoutPage() {
   const { cart, removeFromCart, updateQuantity, totalPrice } = useCart();
   const router = useRouter();
   const [formData, setFormData] = useState({ name: "", email: "" });
   const [formErrors, setFormErrors] = useState({ name: "", email: "" });
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [quote, setQuote] = useState<Quote | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [customFieldValues, setCustomFieldValues] = useState<
+    Record<string, string>
+  >({});
+  const [customFieldErrors, setCustomFieldErrors] = useState<
+    Record<string, string>
+  >({});
+
+  useEffect(() => {
+    if (cart.length === 0) {
+      setQuote(null);
+      return;
+    }
+
+    setQuoteLoading(true);
+    axios
+      .post(`${BACKENDURL}/api/payment/quote`, {
+        items: cart.map((item) => ({
+          price: item.price,
+          quantity: item.quantity,
+        })),
+      })
+      .then((res) => setQuote(res.data.quote))
+      .catch((err) => {
+        console.error("Failed to fetch quote:", err);
+        setQuote(null);
+      })
+      .finally(() => setQuoteLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalPrice, cart.length]);
+
+  useEffect(() => {
+    const eventId = cart[0]?.eventId;
+    if (!eventId) {
+      setCustomFields([]);
+      return;
+    }
+
+    axios
+      .get(`${BACKENDURL}/api/events/${eventId}`)
+      .then((res) => setCustomFields(res.data.event?.customFields || []))
+      .catch((err) => {
+        console.error("Failed to fetch custom fields:", err);
+        setCustomFields([]);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart[0]?.eventId]);
+
+  const handleCustomFieldChange = (label: string, value: string) => {
+    setCustomFieldValues((prev) => ({ ...prev, [label]: value }));
+    setCustomFieldErrors((prev) => ({ ...prev, [label]: "" }));
+  };
+
+  const validateCustomFields = () => {
+    const errors: Record<string, string> = {};
+    let isValid = true;
+    customFields.forEach((field) => {
+      if (field.required && !customFieldValues[field.label]?.trim()) {
+        errors[field.label] = `${field.label} is required`;
+        isValid = false;
+      }
+    });
+    setCustomFieldErrors(errors);
+    return isValid;
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -52,6 +132,7 @@ export default function CheckoutPage() {
 
   const handleCheckout = async () => {
     if (!validateForm()) return;
+    if (!validateCustomFields()) return;
 
     if (cart.length === 0) {
       toast.error("Your cart is empty");
@@ -61,7 +142,10 @@ export default function CheckoutPage() {
     const payload = {
       email: formData.email,
       userName: formData.name,
-      amount: totalPrice,
+      customFieldResponses: customFields.map((field) => ({
+        label: field.label,
+        value: customFieldValues[field.label] || "",
+      })),
       items: cart.map((item) => ({
         id: item.id,
         name: item.name,
@@ -241,7 +325,95 @@ export default function CheckoutPage() {
                 </p>
               )}
             </div>
+
+            {customFields.map((field) => (
+              <div key={field.label}>
+                <label className="flex items-center gap-2 text-sm font-medium text-[var(--color-text-muted)]">
+                  {field.label}
+                  {field.required && (
+                    <span className="text-[var(--color-error)]">*</span>
+                  )}
+                </label>
+                {field.type === "textarea" ? (
+                  <textarea
+                    value={customFieldValues[field.label] || ""}
+                    onChange={(e) =>
+                      handleCustomFieldChange(field.label, e.target.value)
+                    }
+                    rows={3}
+                    className="mt-1 w-full rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2 text-[var(--color-text)] outline-none transition-all duration-300 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/40"
+                  />
+                ) : field.type === "checkbox" ? (
+                  <label className="mt-1 flex items-center gap-2 text-sm text-[var(--color-text)]">
+                    <input
+                      type="checkbox"
+                      checked={customFieldValues[field.label] === "true"}
+                      onChange={(e) =>
+                        handleCustomFieldChange(
+                          field.label,
+                          e.target.checked ? "true" : "false"
+                        )
+                      }
+                      className="h-4 w-4 rounded border-[var(--color-border)] accent-[var(--color-primary)]"
+                    />
+                    Yes
+                  </label>
+                ) : (
+                  <input
+                    type={
+                      field.type === "email"
+                        ? "email"
+                        : field.type === "phone"
+                        ? "tel"
+                        : field.type === "number"
+                        ? "number"
+                        : "text"
+                    }
+                    value={customFieldValues[field.label] || ""}
+                    onChange={(e) =>
+                      handleCustomFieldChange(field.label, e.target.value)
+                    }
+                    className="mt-1 w-full rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-4 py-2 text-[var(--color-text)] outline-none transition-all duration-300 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/40"
+                  />
+                )}
+                {customFieldErrors[field.label] && (
+                  <p className="mt-1 text-sm text-[var(--color-error)]">
+                    {customFieldErrors[field.label]}
+                  </p>
+                )}
+              </div>
+            ))}
           </form>
+        </div>
+
+        {/* Fee breakdown */}
+        <div className="card-surface space-y-2 p-4 sm:p-6">
+          <div className="flex items-center justify-between text-sm text-[var(--color-text-muted)]">
+            <span>Ticket subtotal</span>
+            <span>₦{(quote?.ticketSubtotal ?? totalPrice).toLocaleString()}</span>
+          </div>
+          <div className="flex items-center justify-between text-sm text-[var(--color-text-muted)]">
+            <span>Service fee</span>
+            <span>
+              {quoteLoading
+                ? "..."
+                : `₦${(quote?.serviceFee ?? 0).toLocaleString()}`}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-sm text-[var(--color-text-muted)]">
+            <span>Payment processing fee</span>
+            <span>
+              {quoteLoading
+                ? "..."
+                : `₦${(quote?.gatewayFee ?? 0).toLocaleString()}`}
+            </span>
+          </div>
+          <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-2 text-lg font-semibold sm:text-xl">
+            <span>Total</span>
+            <span className="text-[var(--color-accent)]">
+              ₦{(quote?.total ?? totalPrice).toLocaleString()}
+            </span>
+          </div>
         </div>
 
         {/* Trust signal */}
@@ -249,27 +421,21 @@ export default function CheckoutPage() {
           <ShieldCheck className="h-4 w-4 text-[var(--color-success)]" />
           Payments are secured and processed by Paystack.
         </div>
-
-        {/* Total */}
-        <div className="flex items-center justify-between text-lg font-semibold sm:text-xl">
-          <span>Total</span>
-          <span className="text-[var(--color-accent)]">
-            ₦{totalPrice.toLocaleString()}
-          </span>
-        </div>
       </div>
 
       {/* Sticky Footer */}
       <div className="sticky bottom-0 mx-auto w-full max-w-3xl border-t border-[var(--color-border)] bg-[var(--color-bg)]/95 p-4 backdrop-blur-xl sm:p-6">
         <button
           onClick={handleCheckout}
-          disabled={isProcessingPayment}
+          disabled={isProcessingPayment || quoteLoading}
           className={`btn-aurora flex w-full items-center justify-center px-4 py-3 font-bold ${
-            isProcessingPayment ? "cursor-not-allowed opacity-50" : ""
+            isProcessingPayment || quoteLoading ? "cursor-not-allowed opacity-50" : ""
           }`}
         >
           <ShoppingCart className="mr-2 h-5 w-5" />
-          {isProcessingPayment ? <Loader /> : "Pay Now"}
+          {isProcessingPayment
+            ? <Loader />
+            : `Pay ₦${(quote?.total ?? totalPrice).toLocaleString()}`}
         </button>
       </div>
     </div>

@@ -8,6 +8,12 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const escapeHtml = (str) =>
+  String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
 const formatDate = (date) => {
   if (!date) return "";
   return new Intl.DateTimeFormat("en-US", {
@@ -29,6 +35,8 @@ const sendTicketEmail = async ({
   ticketId,
   pricePaid,
   qrImage,
+  customSubject,
+  customMessage,
 }) => {
   const qrCid = "ticket-qr";
   const base64Data = qrImage.split(",")[1];
@@ -58,6 +66,11 @@ const sendTicketEmail = async ({
                 <td style="padding:28px 24px 8px;">
                   <p style="margin:0 0 4px;font-size:14px;color:#9ca3af;">Hi ${buyerName},</p>
                   <h1 style="margin:0 0 20px;font-size:20px;color:#ffffff;font-weight:700;">${eventTitle}</h1>
+                  ${
+                    customMessage
+                      ? `<p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#d1d5db;white-space:pre-line;">${escapeHtml(customMessage)}</p>`
+                      : ""
+                  }
 
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#1a1a1a;border-radius:12px;border:1px solid #2a2a2a;margin-bottom:24px;">
                     ${
@@ -130,7 +143,7 @@ const sendTicketEmail = async ({
   await transporter.sendMail({
     from: `"FUNAABParty" <${process.env.EMAIL_USER}>`,
     to,
-    subject: `Your ticket for ${eventTitle}`,
+    subject: customSubject || `Your ticket for ${eventTitle}`,
     html,
     attachments: [
       {

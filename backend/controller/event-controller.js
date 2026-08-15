@@ -6,7 +6,7 @@ const getUpcomingEvent = async (req, res) => {
 
     const events = await Event.find({ date: { $gte: now }, status: "published" })
       .select(
-        "slug title location startTime date image details tickets organizer"
+        "slug customSlug title location startTime date image details tickets organizer theme"
       )
       .sort({ date: 1 })
       .limit(20);
@@ -42,7 +42,7 @@ const getTodaysEvents = async (req, res) => {
       status: "published",
     })
       .select(
-        "slug title location date startTime details image tickets organizer"
+        "slug customSlug title location date startTime details image tickets organizer theme"
       )
       .sort({ date: 1 })
       .limit(20);
@@ -55,11 +55,27 @@ const getTodaysEvents = async (req, res) => {
   }
 };
 
+const getAllPublishedEvents = async (req, res) => {
+  try {
+    const events = await Event.find({ status: "published" })
+      .select("slug customSlug updatedAt")
+      .sort({ updatedAt: -1 });
+
+    res.status(200).json({ events: events || [] });
+  } catch (error) {
+    console.error("Error fetching published events:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 const getEventBySlug = async (req, res) => {
   const { slug } = req.params;
 
   try {
-    const event = await Event.findOne({ slug, status: "published" });
+    const event = await Event.findOne({
+      status: "published",
+      $or: [{ slug }, { customSlug: slug }],
+    });
 
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
@@ -72,4 +88,9 @@ const getEventBySlug = async (req, res) => {
   }
 };
 
-module.exports = { getTodaysEvents, getUpcomingEvent, getEventBySlug };
+module.exports = {
+  getTodaysEvents,
+  getUpcomingEvent,
+  getEventBySlug,
+  getAllPublishedEvents,
+};

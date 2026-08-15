@@ -4,10 +4,11 @@ import axios from "axios";
 import Image from "next/image";
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { MapPin, Calendar as CalendarIcon, Plus } from "lucide-react";
+import { MapPin, Calendar as CalendarIcon, Plus, Link2 } from "lucide-react";
 import Loader from "@/component/Loader";
 import toast from "react-hot-toast";
 import { optimizedImage } from "@/lib/cloudinaryUrl";
+import { EVENT_THEMES } from "@/lib/eventThemes";
 
 const BACKENDURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -26,6 +27,8 @@ interface EventRow {
   image: string;
   status: string;
   tickets: TicketTier[];
+  slug: string;
+  customSlug?: string;
 }
 
 const statusStyles: Record<string, string> = {
@@ -73,6 +76,38 @@ export default function EventManagerPage() {
 
   const [bankName, setBankName] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
+
+  // customization state
+  const [customSlug, setCustomSlug] = useState("");
+  const [theme, setTheme] = useState<(typeof EVENT_THEMES)[number]["value"]>(
+    "classic"
+  );
+  const [customFields, setCustomFields] = useState<
+    { label: string; type: string; required: boolean }[]
+  >([]);
+  const [confirmationSubject, setConfirmationSubject] = useState("");
+  const [confirmationBody, setConfirmationBody] = useState("");
+
+  const addCustomField = () => {
+    setCustomFields([
+      ...customFields,
+      { label: "", type: "text", required: false },
+    ]);
+  };
+
+  const updateCustomField = (
+    index: number,
+    key: "label" | "type" | "required",
+    value: string | boolean
+  ) => {
+    setCustomFields((prev) =>
+      prev.map((f, i) => (i === index ? { ...f, [key]: value } : f))
+    );
+  };
+
+  const removeCustomField = (index: number) => {
+    setCustomFields((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const banks = [
     { name: "Access Bank", code: "044" },
@@ -145,6 +180,15 @@ export default function EventManagerPage() {
     formData.append("accountNumber", accountNumber);
     formData.append("status", status);
 
+    if (customSlug.trim()) formData.append("customSlug", customSlug.trim());
+    formData.append("theme", theme);
+    formData.append(
+      "customFields",
+      JSON.stringify(customFields.filter((f) => f.label.trim()))
+    );
+    formData.append("confirmationSubject", confirmationSubject);
+    formData.append("confirmationBody", confirmationBody);
+
     try {
       await axios.post(`${BACKENDURL}/api/create-event`, formData, {
         headers: {
@@ -167,6 +211,11 @@ export default function EventManagerPage() {
       setTickets([{ type: "", price: "", quantity: "", deadline: "" }]);
       setBankName("");
       setAccountNumber("");
+      setCustomSlug("");
+      setTheme("classic");
+      setCustomFields([]);
+      setConfirmationSubject("");
+      setConfirmationBody("");
       setIsModalOpen(false);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
@@ -255,6 +304,20 @@ export default function EventManagerPage() {
                       <p className="text-xs text-[var(--color-text-muted)] mt-2">
                         {sold} / {capacity} tickets sold
                       </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const link = `${window.location.origin}/event/${
+                            ev.customSlug || ev.slug
+                          }`;
+                          navigator.clipboard.writeText(link);
+                          toast.success("Event link copied");
+                        }}
+                        className="mt-2 flex items-center gap-1.5 text-xs text-[var(--color-secondary)] hover:underline"
+                      >
+                        <Link2 className="w-3.5 h-3.5" />
+                        Copy event link
+                      </button>
                     </div>
                   </div>
                 );
@@ -476,6 +539,144 @@ export default function EventManagerPage() {
                   className="w-full border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3 rounded-[var(--radius-btn)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
                   required
                 />
+              </div>
+
+              {/* Custom event page link */}
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                  Custom Event Link (optional)
+                </label>
+                <div className="flex items-center rounded-[var(--radius-btn)] border border-[var(--color-border)] bg-[var(--color-surface-2)] overflow-hidden">
+                  <span className="pl-3 text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+                    /event/
+                  </span>
+                  <input
+                    type="text"
+                    value={customSlug}
+                    onChange={(e) => setCustomSlug(e.target.value)}
+                    placeholder="your-custom-link"
+                    className="w-full bg-transparent p-3 pl-1 text-[var(--color-text)] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Theme */}
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-2">
+                  Event Theme
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {EVENT_THEMES.map((t) => (
+                    <button
+                      key={t.value}
+                      type="button"
+                      onClick={() => setTheme(t.value)}
+                      className={`flex flex-col items-center gap-1.5 py-2 rounded-[var(--radius-btn)] border transition ${
+                        theme === t.value
+                          ? "border-[var(--color-primary)]"
+                          : "border-[var(--color-border)]"
+                      }`}
+                    >
+                      <span
+                        className="w-6 h-6 rounded-full"
+                        style={{
+                          background: `linear-gradient(135deg, ${t.primary}, ${t.accent})`,
+                        }}
+                      />
+                      <span className="text-[10px] text-[var(--color-text-muted)]">
+                        {t.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom checkout fields */}
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-2">
+                  Custom Checkout Fields
+                </label>
+                {customFields.map((field, index) => (
+                  <div key={index} className="flex items-center gap-2 mb-2">
+                    <input
+                      type="text"
+                      placeholder="Field label (e.g. T-shirt size)"
+                      value={field.label}
+                      onChange={(e) =>
+                        updateCustomField(index, "label", e.target.value)
+                      }
+                      className="flex-1 border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-text)] p-2 rounded"
+                    />
+                    <select
+                      value={field.type}
+                      onChange={(e) =>
+                        updateCustomField(index, "type", e.target.value)
+                      }
+                      className="border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-text)] p-2 rounded text-sm"
+                    >
+                      <option value="text">Text</option>
+                      <option value="email">Email</option>
+                      <option value="phone">Phone</option>
+                      <option value="number">Number</option>
+                      <option value="textarea">Long text</option>
+                      <option value="checkbox">Checkbox</option>
+                    </select>
+                    <label className="flex items-center gap-1 text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={field.required}
+                        onChange={(e) =>
+                          updateCustomField(index, "required", e.target.checked)
+                        }
+                        className="accent-[var(--color-primary)]"
+                      />
+                      Required
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => removeCustomField(index)}
+                      className="text-[var(--color-error)] font-bold"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addCustomField}
+                  className="text-sm text-[var(--color-secondary)] hover:underline"
+                >
+                  + Add Field
+                </button>
+              </div>
+
+              {/* Confirmation email */}
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                  Confirmation Email Subject (optional)
+                </label>
+                <input
+                  type="text"
+                  value={confirmationSubject}
+                  onChange={(e) => setConfirmationSubject(e.target.value)}
+                  placeholder="Your ticket for {{eventTitle}} is confirmed!"
+                  className="w-full border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3 rounded-[var(--radius-btn)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">
+                  Confirmation Email Message (optional)
+                </label>
+                <textarea
+                  value={confirmationBody}
+                  onChange={(e) => setConfirmationBody(e.target.value)}
+                  placeholder="Hi {{buyerName}}, thanks for grabbing a {{ticketType}} ticket..."
+                  rows={3}
+                  className="w-full border border-[var(--color-border)] bg-[var(--color-surface-2)] p-3 rounded-[var(--radius-btn)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:outline-none"
+                />
+                <p className="text-xs text-[var(--color-text-muted)] mt-1">
+                  Placeholders: {"{{buyerName}}"}, {"{{eventTitle}}"}, {"{{eventDate}}"}, {"{{eventLocation}}"}, {"{{ticketType}}"}, {"{{ticketId}}"}
+                </p>
               </div>
 
               {/* Image Upload */}

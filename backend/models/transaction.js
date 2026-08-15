@@ -19,6 +19,18 @@ const transactionSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
+    ticketSubtotal: {
+      type: Number,
+      default: 0,
+    },
+    serviceFee: {
+      type: Number,
+      default: 0,
+    },
+    gatewayFee: {
+      type: Number,
+      default: 0,
+    },
     ticketType: {
       type: String,
       required: true,
@@ -45,8 +57,22 @@ const transactionSchema = mongoose.Schema(
       type: {
         organizerAmount: Number,
         platformFee: Number,
+        gatewayFee: Number,
       },
       default: {},
+    },
+    customFieldResponses: {
+      type: [{ label: String, value: String }],
+      default: [],
+    },
+    payoutStatus: {
+      type: String,
+      enum: ["unpaid", "paid"],
+      default: "unpaid",
+    },
+    payout: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Payout",
     },
   },
   { timestamps: true }

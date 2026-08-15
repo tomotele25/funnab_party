@@ -73,10 +73,11 @@ export default function AdminSettingsPage() {
         className="text-2xl font-bold text-[var(--color-text)] mb-1"
         style={{ fontFamily: "var(--font-space-grotesk)" }}
       >
-        Platform Fee Settings
+        Service Fee Settings
       </h1>
       <p className="text-[var(--color-text-muted)] text-sm mb-6">
-        Configure how much FUNAABParty takes from each ticket sale.
+        Configure the service fee charged to customers on top of the ticket
+        price at checkout. Organizers always receive the full ticket price.
       </p>
 
       <div className="card-surface p-6 space-y-6">
@@ -147,11 +148,10 @@ export default function AdminSettingsPage() {
         <div className="flex gap-2 bg-[var(--color-warning)]/10 border border-[var(--color-warning)]/30 text-[var(--color-warning)] text-xs rounded-[var(--radius-card)] p-3">
           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <p>
-            Paystack subaccounts only natively enforce a percentage-based fee
-            at settlement (applied automatically to new events created after
-            this change). Flat/hybrid fee values are recorded for reporting
-            on the Transactions page, but are not automatically deducted by
-            Paystack.
+            This fee is added to the customer&apos;s total at checkout,
+            alongside a separate Paystack payment processing fee (1.5% +
+            ₦100, capped at ₦2,000). Changes apply to the next checkout —
+            in-progress carts keep the fee shown when they loaded.
           </p>
         </div>
 

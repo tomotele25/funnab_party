@@ -53,6 +53,10 @@ const purchasedTicketSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    customFieldResponses: {
+      type: [{ label: String, value: String }],
+      default: [],
+    },
   },
   { timestamps: true }
 );

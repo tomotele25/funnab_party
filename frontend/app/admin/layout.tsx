@@ -14,6 +14,7 @@ import {
   Settings,
   LogOut,
   Menu,
+  Wallet,
 } from "lucide-react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -37,6 +38,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       href: "/admin/transactions",
       icon: <Receipt size={18} />,
     },
+    { name: "Payouts", href: "/admin/payouts", icon: <Wallet size={18} /> },
     { name: "Settings", href: "/admin/settings", icon: <Settings size={18} /> },
   ];
 
@@ -65,7 +67,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   src={crownLogo}
                   alt="Funaab Party crown logo"
                   fill
-                  className="object-contain"
+                  className="object-contain grayscale"
                 />
               </div>
               <h1
