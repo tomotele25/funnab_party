@@ -93,7 +93,7 @@ export default function AdminTransactionsPage() {
         </div>
       ) : (
         <div className="card-surface overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full min-w-[720px] text-sm text-left">
             <thead className="bg-[var(--color-surface-2)] text-[var(--color-text-muted)] text-xs uppercase tracking-wide">
               <tr>
                 <th className="p-4">Reference</th>

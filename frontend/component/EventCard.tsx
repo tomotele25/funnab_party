@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Clock, MapPin } from "lucide-react";
 import { optimizedImage } from "@/lib/cloudinaryUrl";
 import { getEventThemeStyle } from "@/lib/eventThemes";
 
@@ -92,9 +93,16 @@ const EventCard = ({ event }: { event?: EventCardData }) => {
           <h3 className="line-clamp-2 text-base font-bold leading-tight text-[var(--color-text)] md:text-lg">
             {event.title}
           </h3>
-          <p className="text-xs text-[var(--color-text-muted)] md:text-sm">
-            {event.location}
+          <p className="flex items-center gap-1 text-xs text-[var(--color-text-muted)] md:text-sm">
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{event.location}</span>
           </p>
+          {event.startTime && (
+            <p className="flex items-center gap-1 text-xs text-[var(--color-text-muted)]">
+              <Clock className="h-3.5 w-3.5 shrink-0" />
+              {event.startTime}
+            </p>
+          )}
 
           <div className="mt-auto flex items-center justify-between pt-2">
             <span className="gradient-text-aurora text-sm font-bold md:text-base">

@@ -121,7 +121,7 @@ const initializePayment = async (req, res) => {
         email,
         amount: total * 100,
         reference: firstTransaction.paystackReference,
-        callback_url: "http://localhost:3000/event/payment",
+        callback_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/event/payment`,
       },
       {
         headers: {

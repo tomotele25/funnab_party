@@ -67,9 +67,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-[var(--color-bg)]">
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-10 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 w-52 bg-[var(--color-surface)] border-r border-[var(--color-border)] shadow-md transform transition-transform duration-300 z-20
+        className={`fixed inset-y-0 left-0 w-52 bg-[var(--color-surface)] border-r border-[var(--color-border)] shadow-md transform transition-transform duration-300 z-20 overflow-y-auto
           ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0`}

@@ -63,8 +63,8 @@ export default function AdminOrganizersPage() {
           <p className="text-[var(--color-text-muted)]">No organizers yet.</p>
         </div>
       ) : (
-        <div className="card-surface overflow-hidden">
-          <table className="w-full text-sm text-left">
+        <div className="card-surface overflow-x-auto">
+          <table className="w-full min-w-[560px] text-sm text-left">
             <thead className="bg-[var(--color-surface-2)] text-[var(--color-text-muted)] text-xs uppercase tracking-wide">
               <tr>
                 <th className="p-4">Organizer</th>

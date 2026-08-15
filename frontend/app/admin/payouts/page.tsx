@@ -109,7 +109,7 @@ export default function AdminPayoutsPage() {
           </div>
         ) : (
           <div className="card-surface overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[600px] text-sm">
               <thead>
                 <tr className="text-left text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
                   <th className="p-4 font-medium">Organizer</th>
@@ -169,7 +169,7 @@ export default function AdminPayoutsPage() {
           </div>
         ) : (
           <div className="card-surface overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[600px] text-sm">
               <thead>
                 <tr className="text-left text-[var(--color-text-muted)] border-b border-[var(--color-border)]">
                   <th className="p-4 font-medium">Organizer</th>
