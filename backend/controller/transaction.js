@@ -81,6 +81,39 @@ const initializePayment = async (req, res) => {
       return res.status(400).json({ message: "Invalid ticket subtotal." });
     }
 
+    // Validate stock for every line item before charging anything.
+    for (const item of items) {
+      if (!item.eventId || !item.organizer || !item.ticketType) {
+        return res
+          .status(400)
+          .json({ message: "Item is missing eventId, organizer or ticketType." });
+      }
+
+      const event = await Event.findOne({ slug: item.eventId });
+      if (!event) {
+        return res
+          .status(404)
+          .json({ message: `Event not found for "${item.eventId}".` });
+      }
+
+      const ticketTier = event.tickets.find((t) => t.type === item.ticketType);
+      if (!ticketTier) {
+        return res
+          .status(404)
+          .json({ message: `Ticket type "${item.ticketType}" not found.` });
+      }
+
+      const remaining = ticketTier.quantity - ticketTier.sold;
+      if (item.quantity > remaining) {
+        return res.status(409).json({
+          message:
+            remaining <= 0
+              ? `"${item.ticketType}" is sold out.`
+              : `Only ${remaining} "${item.ticketType}" ticket(s) left.`,
+        });
+      }
+    }
+
     const settings = await getOrCreateSettings();
     const { gatewayFee, total } = calculateCheckoutTotals(
       ticketSubtotal,
@@ -89,14 +122,11 @@ const initializePayment = async (req, res) => {
 
     const transactions = await Promise.all(
       items.map((item) => {
-        if (!item.eventId || !item.organizer || !item.ticketType) {
-          throw new Error("Item is missing eventId, organizer or ticketType");
-        }
-
         return Transaction.create({
           eventId: item.eventId,
           organizer: item.organizer,
           ticketType: item.ticketType,
+          quantity: item.quantity,
           amount: item.price * item.quantity,
           expectedAmount: item.price * item.quantity,
           userName,
@@ -183,26 +213,59 @@ const verifyPayment = async (req, res) => {
           .json({ message: "Event for this transaction was not found." });
       }
 
-      const qrToken = crypto.randomBytes(24).toString("hex");
+      const quantity = transaction.quantity || 1;
+      const pricePerUnit = transaction.amount / quantity;
 
-      const newTicket = new Ticket({
-        ticketId: `TCK-${Date.now()}-${transaction._id}`,
-        event: event._id,
-        buyerName: transaction.userName,
-        buyerEmail: transaction.userEmail,
-        ticketType: transaction.ticketType,
-        pricePaid: transaction.amount,
-        paymentRef: transaction.paystackReference,
-        qrToken,
-        qrSignature: signQrToken(qrToken),
-        customFieldResponses: transaction.customFieldResponses || [],
-      });
+      // Atomically reserve the stock — only succeeds if enough remains right
+      // now, closing the race window between the initialize-time check and
+      // this verification (e.g. two people buying the last ticket at once).
+      const stockReserved = await Event.findOneAndUpdate(
+        {
+          slug: transaction.eventId,
+          tickets: {
+            $elemMatch: {
+              type: transaction.ticketType,
+              $expr: { $lte: [{ $add: ["$sold", quantity] }, "$quantity"] },
+            },
+          },
+        },
+        { $inc: { "tickets.$[t].sold": quantity } },
+        { arrayFilters: [{ "t.type": transaction.ticketType }] }
+      );
 
-      await newTicket.save();
+      if (!stockReserved) {
+        // Payment already succeeded on Paystack's side by this point, so we
+        // still honor it rather than leaving the customer paid-but-ticketless
+        // — but this needs a human to notice the event is now oversold.
+        console.error(
+          `OVERSOLD: ${transaction.ticketType} on event ${transaction.eventId} — ` +
+            `reference ${transaction.paystackReference} paid for ${quantity} ` +
+            `ticket(s) after stock ran out.`
+        );
+        await Event.updateOne(
+          { slug: transaction.eventId, "tickets.type": transaction.ticketType },
+          { $inc: { "tickets.$.sold": quantity } }
+        );
+      }
 
-      await Event.updateOne(
-        { slug: transaction.eventId, "tickets.type": transaction.ticketType },
-        { $inc: { "tickets.$.sold": 1 } }
+      const newTickets = await Promise.all(
+        Array.from({ length: quantity }, async (_, i) => {
+          const qrToken = crypto.randomBytes(24).toString("hex");
+          const ticket = new Ticket({
+            ticketId: `TCK-${Date.now()}-${transaction._id}-${i + 1}`,
+            event: event._id,
+            buyerName: transaction.userName,
+            buyerEmail: transaction.userEmail,
+            ticketType: transaction.ticketType,
+            pricePaid: pricePerUnit,
+            paymentRef: transaction.paystackReference,
+            qrToken,
+            qrSignature: signQrToken(qrToken),
+            customFieldResponses: transaction.customFieldResponses || [],
+          });
+          await ticket.save();
+          return ticket;
+        })
       );
 
       // The customer paid the gateway fee on top of the ticket price at
@@ -220,52 +283,55 @@ const verifyPayment = async (req, res) => {
       };
       await transaction.save();
 
-      try {
-        const qrImage = await QRCode.toDataURL(qrToken);
+      for (const newTicket of newTickets) {
+        try {
+          const qrImage = await QRCode.toDataURL(newTicket.qrToken);
 
-        const placeholders = {
-          "{{buyerName}}": newTicket.buyerName,
-          "{{eventTitle}}": event.title,
-          "{{eventDate}}": formatEventDate(event.date),
-          "{{eventLocation}}": event.location,
-          "{{ticketType}}": newTicket.ticketType,
-          "{{ticketId}}": newTicket.ticketId,
-        };
-        const applyPlaceholders = (str) =>
-          Object.entries(placeholders).reduce(
-            (acc, [key, value]) => acc.split(key).join(value || ""),
-            str
-          );
+          const placeholders = {
+            "{{buyerName}}": newTicket.buyerName,
+            "{{eventTitle}}": event.title,
+            "{{eventDate}}": formatEventDate(event.date),
+            "{{eventLocation}}": event.location,
+            "{{ticketType}}": newTicket.ticketType,
+            "{{ticketId}}": newTicket.ticketId,
+          };
+          const applyPlaceholders = (str) =>
+            Object.entries(placeholders).reduce(
+              (acc, [key, value]) => acc.split(key).join(value || ""),
+              str
+            );
 
-        const customSubject = event.confirmationEmail?.subject
-          ? applyPlaceholders(event.confirmationEmail.subject)
-          : undefined;
-        const customMessage = event.confirmationEmail?.body
-          ? applyPlaceholders(event.confirmationEmail.body)
-          : undefined;
+          const customSubject = event.confirmationEmail?.subject
+            ? applyPlaceholders(event.confirmationEmail.subject)
+            : undefined;
+          const customMessage = event.confirmationEmail?.body
+            ? applyPlaceholders(event.confirmationEmail.body)
+            : undefined;
 
-        await sendTicketEmail({
-          to: newTicket.buyerEmail,
-          buyerName: newTicket.buyerName,
-          eventTitle: event.title,
-          eventDate: event.date,
-          eventStartTime: event.startTime,
-          eventLocation: event.location,
-          ticketType: newTicket.ticketType,
-          ticketId: newTicket.ticketId,
-          pricePaid: newTicket.pricePaid,
-          qrImage,
-          customSubject,
-          customMessage,
-        });
-      } catch (emailError) {
-        console.error("Failed to send ticket email:", emailError.message);
+          await sendTicketEmail({
+            to: newTicket.buyerEmail,
+            buyerName: newTicket.buyerName,
+            eventTitle: event.title,
+            eventDate: event.date,
+            eventStartTime: event.startTime,
+            eventLocation: event.location,
+            ticketType: newTicket.ticketType,
+            ticketId: newTicket.ticketId,
+            pricePaid: newTicket.pricePaid,
+            qrImage,
+            customSubject,
+            customMessage,
+          });
+        } catch (emailError) {
+          console.error("Failed to send ticket email:", emailError.message);
+        }
       }
 
       return res.status(200).json({
         message: "Payment verified & ticket generated",
         transaction,
-        ticket: newTicket,
+        ticket: newTickets[0],
+        tickets: newTickets,
       });
     }
 

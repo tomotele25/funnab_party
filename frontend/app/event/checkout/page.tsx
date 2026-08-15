@@ -165,7 +165,10 @@ export default function CheckoutPage() {
       router.push(response.data.authorization_url);
     } catch (err: unknown) {
       console.error("Payment error:", err);
-      toast.error("Payment initiation failed. Please try again.");
+      const message = axios.isAxiosError(err)
+        ? err.response?.data?.message
+        : undefined;
+      toast.error(message || "Payment initiation failed. Please try again.");
     } finally {
       setIsProcessingPayment(false);
     }

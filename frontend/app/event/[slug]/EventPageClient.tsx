@@ -70,6 +70,7 @@ const EventPageClient = ({ slug }: EventPageClientProps) => {
   }, [slug]);
 
   const handleSelectTicket = (ticket: Ticket) => {
+    if (ticket.quantity - ticket.sold <= 0) return;
     setSelectedTicket(ticket);
     setQuantity(1);
   };
@@ -77,6 +78,7 @@ const EventPageClient = ({ slug }: EventPageClientProps) => {
   const handleQuantityChange = (delta: number) => {
     if (!selectedTicket) return;
     const maxQty = selectedTicket.quantity - selectedTicket.sold;
+    if (maxQty <= 0) return;
     setQuantity(Math.max(1, Math.min(quantity + delta, maxQty)));
   };
 
@@ -166,20 +168,27 @@ const EventPageClient = ({ slug }: EventPageClientProps) => {
 
             <h2 className="mb-4 text-xl font-semibold">Select Your Ticket</h2>
             <ul className="mb-6 space-y-4">
-              {event.tickets.map((ticket, idx) => (
+              {event.tickets.map((ticket, idx) => {
+                const remaining = ticket.quantity - ticket.sold;
+                const soldOut = remaining <= 0;
+                return (
                 <li
                   key={idx}
-                  className={`flex cursor-pointer items-center justify-between rounded-[var(--radius-card)] border p-4 transition-colors duration-200 ${
-                    selectedTicket?.type === ticket.type
-                      ? "border-[var(--color-primary)] bg-[var(--color-surface-2)]"
-                      : "border-[var(--color-border)] hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-surface-2)]"
+                  className={`flex items-center justify-between rounded-[var(--radius-card)] border p-4 transition-colors duration-200 ${
+                    soldOut
+                      ? "cursor-not-allowed border-[var(--color-border)] opacity-50"
+                      : "cursor-pointer " +
+                        (selectedTicket?.type === ticket.type
+                          ? "border-[var(--color-primary)] bg-[var(--color-surface-2)]"
+                          : "border-[var(--color-border)] hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-surface-2)]")
                   }`}
                   onClick={() => handleSelectTicket(ticket)}
+                  aria-disabled={soldOut}
                 >
                   <div>
                     <span className="font-semibold">{ticket.type}</span>
                     <p className="text-sm text-[var(--color-text-muted)]">
-                      {ticket.quantity - ticket.sold} tickets left
+                      {soldOut ? "Sold out" : `${remaining} tickets left`}
                     </p>
                   </div>
                   <div className="flex flex-col items-end">
@@ -213,7 +222,8 @@ const EventPageClient = ({ slug }: EventPageClientProps) => {
                     )}
                   </div>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </article>
         </div>
