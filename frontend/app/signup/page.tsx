@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import Loader from "@/component/Loader";
 import AuthBrandPanel from "@/component/AuthBrandPanel";
 import { useRouter } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 
 export default function Signup() {
@@ -16,6 +17,15 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const BACKENDURL = process.env.NEXT_PUBLIC_BACKEND_URL;
   const router = useRouter();
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    if (!session?.user) return;
+
+    if (session.user.role === "admin") router.push("/admin");
+    else if (session.user.hasEvents) router.push("/organizer");
+    else router.push("/customer");
+  }, [session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     setLoading(true);
@@ -143,7 +153,7 @@ export default function Signup() {
             <button
               type="button"
               className="flex w-full items-center justify-center gap-3 rounded-[var(--radius-btn)] border border-[var(--color-border)] py-2 transition hover:bg-white/5"
-              onClick={() => console.log("Google sign up")}
+              onClick={() => signIn("google")}
             >
               <img
                 src="https://www.svgrepo.com/show/355037/google.svg"

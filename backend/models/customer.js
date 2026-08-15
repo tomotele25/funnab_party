@@ -24,7 +24,6 @@ const customerSchema = mongoose.Schema({
   },
   phoneNumber: {
     type: String,
-    required: true,
   },
 });
 

@@ -19,7 +19,7 @@ const Footer = () => {
                 src={logo}
                 alt="FUNAAB Party logo"
                 fill
-                className="object-contain"
+                className="object-contain grayscale"
               />
             </div>
             <p className="max-w-xs text-center text-sm text-[var(--color-text-muted)] md:text-left">
@@ -92,8 +92,16 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-[var(--color-border)] pt-6 text-center text-sm text-[var(--color-text-muted)]">
-          &copy; {new Date().getFullYear()} FUNAAB Party. All rights reserved.
+        <div className="mt-12 flex flex-col items-center gap-2 border-t border-[var(--color-border)] pt-6 text-center text-sm text-[var(--color-text-muted)] sm:flex-row sm:justify-between">
+          <span>
+            &copy; {new Date().getFullYear()} FUNAAB Party. All rights reserved.
+          </span>
+          <span>
+            Powered by{" "}
+            <span className="font-semibold text-[var(--color-text)]">
+              Chowspace
+            </span>
+          </span>
         </div>
       </div>
     </footer>

@@ -24,7 +24,6 @@ const organizerSchema = mongoose.Schema({
   },
   phoneNumber: {
     type: String,
-    required: true,
   },
 });
 

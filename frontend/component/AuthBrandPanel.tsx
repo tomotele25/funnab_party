@@ -13,7 +13,7 @@ const AuthBrandPanel = () => {
             src={logo}
             alt="FUNAAB Party logo"
             fill
-            className="object-contain p-2"
+            className="object-contain p-2 grayscale"
             priority
             sizes="320px"
           />

@@ -36,7 +36,7 @@ export default function Navbar() {
                 src={crownLogo}
                 alt="FUNAAB Party crown logo"
                 fill
-                className="object-contain"
+                className="object-contain grayscale"
                 priority
                 sizes="48px"
               />

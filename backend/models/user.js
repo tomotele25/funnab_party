@@ -13,7 +13,6 @@ const userSchema = mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
   },
   role: {
     type: String,
@@ -22,7 +21,11 @@ const userSchema = mongoose.Schema({
   },
   phoneNumber: {
     type: String,
-    required: true,
+  },
+  authProvider: {
+    type: String,
+    enum: ["credentials", "google"],
+    default: "credentials",
   },
 });
 

@@ -97,7 +97,7 @@ body {
 .btn-aurora {
   background: var(--gradient-aurora);
   border-radius: var(--radius-btn);
-  color: #fff;
+  color: var(--btn-aurora-text, #fff);
   transition: transform 0.2s var(--ease-standard), box-shadow 0.2s var(--ease-standard);
 }
 

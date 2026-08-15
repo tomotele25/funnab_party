@@ -113,7 +113,7 @@ export default function Login() {
             <button
               type="button"
               className="flex w-full items-center justify-center gap-3 rounded-[var(--radius-btn)] border border-[var(--color-border)] py-2 transition hover:bg-white/5"
-              onClick={() => console.log("Google sign in")}
+              onClick={() => signIn("google")}
             >
               <img
                 src="https://www.svgrepo.com/show/355037/google.svg"
