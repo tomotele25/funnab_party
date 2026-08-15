@@ -255,4 +255,35 @@ const listEventStaff = async (req, res) => {
   }
 };
 
-module.exports = { createEvent, getMyEvents, addEventStaff, listEventStaff };
+const removeEventStaff = async (req, res) => {
+  try {
+    const { staffId } = req.params;
+
+    const staff = await EventStaff.findById(staffId);
+    if (!staff) {
+      return res.status(404).json({ success: false, message: "Staff record not found" });
+    }
+
+    const event = await Event.findById(staff.event);
+    if (!event || String(event.organizer) !== String(req.user.id)) {
+      return res
+        .status(403)
+        .json({ success: false, message: "You do not own this event" });
+    }
+
+    await staff.deleteOne();
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ success: false, message: "Failed to remove staff" });
+  }
+};
+
+module.exports = {
+  createEvent,
+  getMyEvents,
+  addEventStaff,
+  listEventStaff,
+  removeEventStaff,
+};

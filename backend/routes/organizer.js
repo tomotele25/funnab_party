@@ -4,6 +4,7 @@ const {
   getMyEvents,
   addEventStaff,
   listEventStaff,
+  removeEventStaff,
 } = require("../controller/organizer");
 const router = express.Router();
 const protect = require("../middleware/organizerAuth");
@@ -12,5 +13,6 @@ router.post("/create-event", protect, upload.single("image"), createEvent);
 router.get("/my-events", protect, getMyEvents);
 router.post("/event-staff", protect, addEventStaff);
 router.get("/event-staff/:eventId", protect, listEventStaff);
+router.delete("/event-staff/:staffId", protect, removeEventStaff);
 
 module.exports = router;
